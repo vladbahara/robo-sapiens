@@ -1,5 +1,4 @@
-import telebot
-import time
+import telebot, time
 from telebot import types
 
 bot = telebot.TeleBot('881932071:AAF7FhtTi-3Al9Ef53Mt7961JfFGNfTHQ8Y')#токен бота
