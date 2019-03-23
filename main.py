@@ -6,7 +6,7 @@ import logging
 logger = telebot.logger
 telebot.logger.setLevel(logging.DEBUG) 
 
-bot = telebot.TeleBot('881932071:AAF7FhtTi-3Al9Ef53Mt7961JfFGNfTHQ8Y')#токен бота
+bot = telebot.TeleBot('707234632:AAEKTM5uVzYPwSp-62RtMj2Enu_DXDf6TN4')#токен бота
 photo = open('img/share.jpg', 'rb')
 
 @bot.message_handler(commands=['start'])
@@ -49,20 +49,23 @@ def owner_menu(message):
     try:
         mess = message.text
         if(mess == u'📬 Рассказать друзьям'):
-            msg = bot.send_message(message.chat.id, f'Я бот который поможет рассказать о твоём боте или канале тем пользователям, которых это может заинтересовать. Рассылка делается на основании интересов которые заполнили пользователи, так что они будут получать только качественный и интересный контент[.]({photo})', parse_mode='Markdown')
+            markup = types.InlineKeyboardMarkup()
+            btn_my_site= types.InlineKeyboardButton(text='📱 Отправить', url='https://google.com')
+            markup.add(btn_my_site)
+            msg = bot.send_message(message.chat.id, f'Я бот который поможет рассказать о твоём боте или канале тем пользователям, которых это может заинтересовать. Рассылка делается на основании интересов которые заполнили пользователи, так что они будут получать только качественный и интересный контент.<a href="https://imbt.ga/2bLbzibnr0">&#160;</a>', reply_markup=markup, parse_mode='HTML')
             bot.register_next_step_handler(msg, owner_menu)
            
         elif (mess == u'Разместить бота, канал'):
             
-            msg = bot.send_message(message.chat.id, '*Разместить бота, канал!*\nВыбери, что именно ты хочешь разместить. Бота или канал?', parse_mode='Markdown')
+            msg = bot.send_message(message.chat.id, '<b>Разместить бота, канал!</b>\nВыбери, что именно ты хочешь разместить. Бота или канал?<a href="https://imbt.ga/2bLbzibnr0">&#160;</a>', parse_mode='HTML')
             bot.register_next_step_handler(msg, owner_menu)
         elif (mess == u'Мой счёт'):
             
-            msg = bot.send_message(message.chat.id, '*Мой счёт!*\nЧтобы продвигать бота, на счету должно быть не менее 1$.\n💰  *0, 15 $*', parse_mode='Markdown') # f'{money}'
+            msg = bot.send_message(message.chat.id, '<b>Мой счёт!</b>\nЧтобы продвигать бота, на счету должно быть не менее 1$.<a href="https://imbt.ga/UlmN4K1cot">&#160;</a>\n💰  <b>0, 15 $</b>', parse_mode='HTML') # f'{money}'
             bot.register_next_step_handler(msg, owner_menu)
         elif (mess == u'Статистика продвижения'):
             
-            msg = bot.send_message(message.chat.id, '*Статистика продвижения!*\nЗдесь будет отображаться статистика продвижения твоих ботов или каналов.', parse_mode='Markdown')
+            msg = bot.send_message(message.chat.id, '<b>Статистика продвижения!</b>\nЗдесь будет отображаться статистика продвижения твоих ботов или каналов.', parse_mode='HTML')
             bot.register_next_step_handler(msg, owner_menu)
         elif (mess == u'🏬 Изменить аккаунт'):
             
@@ -87,8 +90,10 @@ def user_menu(message):
     try:
         mess = message.text
         if(mess == u'📬 Рассказать друзьям'):
-           
-            msg = bot.send_message(message.chat.id, 'Я бот который на основе твоих интересов будет делать индивидуальную рассылку ботов и каналов. Также ты можешь искать нужный контент самостоятельно.', parse_mode='Markdown')
+            markup = types.InlineKeyboardMarkup()
+            btn_my_site= types.InlineKeyboardButton(text='📱 Отправить', url='https://google.com')
+            markup.add(btn_my_site)
+            msg = bot.send_message(message.chat.id, 'Я бот который на основе твоих интересов будет делать индивидуальную рассылку ботов и каналов. Также ты можешь искать нужный контент самостоятельно.', reply_markup=markup, parse_mode='Markdown')
             bot.register_next_step_handler(msg, user_menu)
         elif (mess == u'Поиск'):
             
