@@ -79,8 +79,8 @@ def owner_menu(message):  # Владелец
 
         elif (mess == u'Мой счёт'):
             markup = types.InlineKeyboardMarkup()
-            forward_btn = types.InlineKeyboardButton(text='💰 Пополнить счёт', url='https://google.com')
-            markup.add(forward_btn)
+            add_money = types.InlineKeyboardButton(text='💰 Пополнить счёт', callback_data='add_money')
+            markup.add(add_money)
 
             if money < 1.0:
                 msg = bot.send_message(message.chat.id, f'<b>Мой счёт!</b>\nЧтобы продвигать бота, на счету должно быть не менее 1$.<a href="https://imbt.ga/UlmN4K1cot">&#160;</a>\n💰  <b>{money} $</b>', parse_mode='HTML', reply_markup=markup)
@@ -91,8 +91,8 @@ def owner_menu(message):  # Владелец
 
         elif (mess == u'Статистика продвижения'):
             markup = types.InlineKeyboardMarkup()
-            stat_channel_1 = types.InlineKeyboardButton(text='@some_channel', url='https://google.com')
-            stat_bot_1 = types.InlineKeyboardButton(text='@some_bot', url='https://google.com')
+            stat_channel_1 = types.InlineKeyboardButton(text='@some_channel', callback_data='channel_stat')
+            stat_bot_1 = types.InlineKeyboardButton(text='@some_bot', callback_data='bot_stat')
             markup.row(stat_channel_1)
             markup.row(stat_bot_1)
             msg = bot.send_message(message.chat.id, '<b>Статистика продвижения!</b>\nЗдесь будет отображаться статистика продвижения твоих ботов или каналов.<a href="https://imbt.ga/9z884zDX1w">&#160;</a>', parse_mode='HTML', reply_markup=markup)
@@ -130,9 +130,9 @@ def user_menu(message):  # Пользователь
 
         elif (mess == u'Поиск'):
             markup = types.InlineKeyboardMarkup()
-            search_bots = types.InlineKeyboardButton(text='Боты', url='https://t.me/share/url?url=https://t.me/RS_Media_Bot')
-            search_channel = types.InlineKeyboardButton(text='Каналы', url='https://t.me/share/url?url=https://t.me/RS_Media_Bot')
-            change_pref = types.InlineKeyboardButton(text='⚙️ Изменить интересы', url='https://t.me/share/url?url=https://t.me/RS_Media_Bot')
+            search_bots = types.InlineKeyboardButton(text='Боты', callback_data='search_bots')
+            search_channel = types.InlineKeyboardButton(text='Каналы', callback_data='search_channels')
+            change_pref = types.InlineKeyboardButton(text='⚙️ Изменить интересы', callback_data='change_prefs')
             markup.row(search_bots)
             markup.row(search_channel)
             markup.row(change_pref)
@@ -141,10 +141,10 @@ def user_menu(message):  # Пользователь
 
         elif (mess == u'Изменить интересы'):
             markup = types.InlineKeyboardMarkup()
-            change_category = types.InlineKeyboardButton(text='1. Категории', url='https://t.me/share/url?url=https://t.me/RS_Media_Bot')
-            change_country = types.InlineKeyboardButton(text='2. Страна', url='https://t.me/share/url?url=https://t.me/RS_Media_Bot')
-            change_content = types.InlineKeyboardButton(text='3. Контент', url='https://t.me/share/url?url=https://t.me/RS_Media_Bot')
-            change_freq = types.InlineKeyboardButton(text='4. Частота рассылки', url='https://t.me/share/url?url=https://t.me/RS_Media_Bot')
+            change_category = types.InlineKeyboardButton(text='1. Категории', callback_data='change_category')
+            change_country = types.InlineKeyboardButton(text='2. Страна', callback_data='change_country')
+            change_content = types.InlineKeyboardButton(text='3. Контент', callback_data='change_content')
+            change_freq = types.InlineKeyboardButton(text='4. Частота рассылки', callback_data='change_freq')
             markup.row(change_category)
             markup.row(change_country)
             markup.row(change_content)
@@ -154,10 +154,10 @@ def user_menu(message):  # Пользователь
 
         elif (mess == u'Частота рассылки'):
             markup = types.InlineKeyboardMarkup()
-            one_per_day = types.InlineKeyboardButton(text='🕟 Раз в день', url='https://t.me/share/url?url=https://t.me/RS_Media_Bot')
-            two_per_day = types.InlineKeyboardButton(text='🕘 Два в день', url='https://t.me/share/url?url=https://t.me/RS_Media_Bot')
-            one_per_two_days = types.InlineKeyboardButton(text='🕜 Раз в 2 дня', url='https://t.me/share/url?url=https://t.me/RS_Media_Bot')
-            one_per_three_days = types.InlineKeyboardButton(text='🕥 Раз в 3 дня', url='https://t.me/share/url?url=https://t.me/RS_Media_Bot')
+            one_per_day = types.InlineKeyboardButton(text='🕟 Раз в день', callback_data='one_per_day')
+            two_per_day = types.InlineKeyboardButton(text='🕘 Два в день', callback_data='two_per_day')
+            one_per_two_days = types.InlineKeyboardButton(text='🕜 Раз в 2 дня', callback_data='one_per_two_days')
+            one_per_three_days = types.InlineKeyboardButton(text='🕥 Раз в 3 дня', callback_data='one_per_three_days')
             markup.row(one_per_day)
             markup.row(two_per_day)
             markup.row(one_per_two_days)
@@ -201,8 +201,52 @@ def callback(call):
             cat_1 = types.InlineKeyboardButton(text='1.', callback_data='saa')
             markup.row(cat_1)
             bot.edit_message_text(uid, messageOp, text="<b>Категории!</b>Выбери одну категорию, которой соответствует твой контент. Это позволит показывать твой контент только заинтересованным пользователям.<a href='https://imbt.ga/dZNsjMG61z'>&#160;</a>", reply_markup=markup, parse_mode='HTML')
+
         elif(command == 'add_channel_command'):
             bot.send_message(uid, 'Add Channel')
+
+        elif(command == 'add_money'):
+            bot.send_message(uid, 'Add Money')
+
+        elif(command == 'channel_stat'):
+            bot.send_message(uid, 'Channel Stat')
+
+        elif(command == 'bot_stat'):
+            bot.send_message(uid, 'Bot Stat')
+
+        elif(command == 'search_bots'):
+            bot.send_message(uid, 'Search Bots')
+
+        elif(command == 'search_channels'):
+            bot.send_message(uid, 'Search Channels')
+
+        elif(command == 'change_prefs'):
+            bot.send_message(uid, 'Change Prefs')
+
+        elif(command == 'change_category'):
+            bot.send_message(uid, 'Change Category')
+
+        elif(command == 'change_country'):
+            bot.send_message(uid, 'Change Country')
+
+        elif(command == 'change_content'):
+            bot.send_message(uid, 'Change Content')
+
+        elif(command == 'change_freq'):
+            bot.send_message(uid, 'Change Freq')
+
+        elif(command == 'one_per_day'):
+            bot.send_message(uid, 'one_per_day')
+
+        elif(command == 'two_per_day'):
+            bot.send_message(uid, 'two_per_day')
+
+        elif(command == 'one_per_two_days'):
+            bot.send_message(uid, 'one_per_two_days')
+
+        elif(command == 'one_per_three_days'):
+            bot.send_message(uid, 'one_per_three_days')
+            
     except Exception as e:
         bot.send_message(uid, 'nope(')
     
