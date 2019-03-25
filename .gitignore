@@ -1,5 +1,8 @@
 dasd.py
 das.py
-img/photo5804072831217150216.jpg
-img/share.jpg
 index.html
+config.py
+.vscode/settings.json
+__pycache__/config.cpython-37.pyc
+img/share.jpg
+.gitignore
