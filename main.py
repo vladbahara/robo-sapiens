@@ -10,7 +10,8 @@ from config import token
 logger = telebot.logger
 telebot.logger.setLevel(logging.DEBUG)
 
-bot = telebot.TeleBot(token)  # токен бота
+bot = telebot.TeleBot(token)
+
 money = 0.65
 
 
@@ -368,9 +369,9 @@ def callback(call):
             bot.send_message(call.message.chat.id, reply_markup=markup, parse_mode='HTML', text='<b>Страна!</b>\nЕсли твой бот локализован под определенную страну или группу стран, тогда выбери страну с целевыми пользователями. Если хочешь чтобы бот продвигался не зависимо от страны проживания пользователей, нажми - "Все страны".<a href="https://imbt.ga/rbJntgXEla">&#160;</a>')
         elif(command == 'sc'):
             bot.send_message(call.message.chat.id, parse_mode="HTML", text='Теперь пришли мне юзер или ссылку на твоего бота или канал.<a href="https://telegra.ph/file/7b0e662039812d457bc62.jpg">&#160;</a>')
-            @bot.message_handler()
-            def callback(call):
-                bot.send_message(call.message.chat.id, 'adasdasdasdasdasd')
+            @bot.message_handler(content_types=['text'])
+            def botid(message):
+                bot.send_message(message.chat.id, text=message.text)
     
     except Exception as e:
         bot.send_message(uid, 'nope(')
