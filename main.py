@@ -98,10 +98,10 @@ def owner_menu(message):  # Владелец
             markup.add(add_money)
 
             if money < 1.0:
-                msg = bot.send_message(message.chat.id, f'<b>Мой счёт!</b>\nЧтобы продвигать бота, на счету должно быть не менее 1$.<a href="https://imbt.ga/UlmN4K1cot">&#160;</a>\n💰  <b>{money} $</b>', parse_mode='HTML', reply_markup=markup)
+                msg = bot.send_message(message.chat.id, text=f'<b>Мой счёт!</b>\nЧтобы продвигать бота, на счету должно быть не менее 1$.<a href="https://imbt.ga/UlmN4K1cot">&#160;</a>\n💰  <b>{money} $</b>', parse_mode='HTML', reply_markup=markup)
                 bot.register_next_step_handler(msg, owner_menu)
             else:
-                msg = bot.send_message(message.chat.id, f'<b>Мой счёт!</b>\nКаждый целевой переход в бота или канал стоит 2 цента.<a href="https://imbt.ga/UlmN4K1cot">&#160;</a>\n💰  <b>{money} $</b>', parse_mode='HTML', reply_markup=markup)
+                msg = bot.send_message(message.chat.id, text=f'<b>Мой счёт!</b>\nКаждый целевой переход в бота или канал стоит 2 цента.<a href="https://imbt.ga/UlmN4K1cot">&#160;</a>\n💰  <b>{money} $</b>', parse_mode='HTML', reply_markup=markup)
                 bot.register_next_step_handler(msg, owner_menu)
 
         elif (mess == u'Статистика продвижения'):
