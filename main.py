@@ -2,13 +2,11 @@
 import logging
 import sqlite3
 import time
-import threading
+
 import telebot
 from telebot import types
 
 from config import token
-
-
 
 logger = telebot.logger
 telebot.logger.setLevel(logging.DEBUG)
@@ -20,7 +18,7 @@ money = 0.65
 
 
 
-@bot.message_handler(commands=[''])
+@bot.message_handler(content_types=['text'])
 def empty_command(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     markup.add('/start')
@@ -388,4 +386,3 @@ if __name__ == '__main__':
             bot.polling(none_stop=True)
         except:
             time.sleep(10)
-

@@ -5,7 +5,6 @@ config.py
 .vscode/settings.json
 __pycache__/config.cpython-37.pyc
 img/share.jpg
-.gitignore
 customers-journal
 customers
 bot_users
