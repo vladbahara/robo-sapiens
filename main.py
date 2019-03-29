@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
+import sqlite3
 import time
 
 import telebot
@@ -14,21 +15,7 @@ bot = telebot.TeleBot(token)
 
 money = 0.65
 
-
-
-@bot.message_handler(commands=['test'])
-def test(message):
-    markup = types.InlineKeyboardMarkup()
-    test_bt = types.InlineKeyboardButton(text='test', callback_data='test')
-    markup.row(test_bt)
-    bot.send_message(message.chat.id, reply_markup=markup, text='opa')
-
-@bot.message_handler(commands=['start'])
-def start(message):
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    markup.add('🏬 Владелец', '🚶‍ Пользователь')
-    msg = bot.send_message(message.chat.id, 'Выбери аккаунт, кем хочешь быть!', reply_markup=markup)
-    bot.register_next_step_handler(msg, manage)
+cyrylic = [
 
 
 @bot.message_handler(commands=[''])
@@ -36,6 +23,14 @@ def empty_command(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     markup.add('/start')
     msg = bot.send_message(message.chat.id, 'Нажимай старт!', reply_markup=markup)
+    bot.register_next_step_handler(msg, start)
+
+
+@bot.message_handler(commands=['start'])
+def start(message):
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    markup.add('🏬 Владелец', '🚶‍ Пользователь')
+    msg = bot.send_message(message.chat.id, 'Выбери аккаунт, кем хочешь быть!', reply_markup=markup)
     bot.register_next_step_handler(msg, manage)
 
 
@@ -66,7 +61,7 @@ def manage(message):
             raise Exception()
 
     except Exception as e:
-        bot.send_message(message.chat.id, 'Ошибочка(')
+        bot.send_message(message.chat.id, 'Ошибочка( 1')
 
 
 def owner_menu(message):  # Владелец
@@ -82,13 +77,15 @@ def owner_menu(message):  # Владелец
             bot.register_next_step_handler(msg, owner_menu)
 
         elif (mess == u'Разместить бота, канал'):
-            markup = types.InlineKeyboardMarkup()
-            add_bot = types.InlineKeyboardButton(text='Разместить бота', callback_data='add_bot_command')
-            add_channel = types.InlineKeyboardButton(text='Разместить канал', callback_data='add_channel_command')
-            markup.row(add_bot)
-            markup.row(add_channel)
-            msg = bot.send_message(message.chat.id, '<b>Разместить бота, канал!</b>\nВыбери, что именно ты хочешь разместить. Бота или канал?<a href="https://imbt.ga/nwmnR4wpIZ">&#160;</a>', parse_mode='HTML', reply_markup=markup)
-            bot.register_next_step_handler(msg, owner_menu)
+            try:
+                markup = types.InlineKeyboardMarkup()
+                add_bot = types.InlineKeyboardButton(text='Разместить бота', callback_data='add_bot_command')
+                add_channel = types.InlineKeyboardButton(text='Разместить канал', callback_data='add_channel_command')
+                markup.row(add_bot)
+                markup.row(add_channel)
+                msg = bot.send_message(message.chat.id, '<b>Разместить бота, канал!</b>\nВыбери, что именно ты хочешь разместить. Бота или канал?<a href="https://imbt.ga/nwmnR4wpIZ">&#160;</a>', parse_mode='HTML', reply_markup=markup)
+            except Exception as e:    
+                bot.register_next_step_handler(msg, owner_menu)
             
 
 
@@ -128,7 +125,7 @@ def owner_menu(message):  # Владелец
             raise Exception()
 
     except Exception as e:
-        msg = bot.send_message(message.chat.id, 'Ошибочка(')
+        msg = bot.send_message(message.chat.id, 'Ошибочка( 2')
         bot.register_next_step_handler(msg, owner_menu)
 
 
@@ -195,7 +192,7 @@ def user_menu(message):  # Пользователь
             raise Exception()
 
     except Exception as e:
-        msg = bot.send_message(message.chat.id, 'Ошибочка(')
+        msg = bot.send_message(message.chat.id, 'Ошибочка( 3')
         bot.register_next_step_handler(msg, user_menu)
 
 
@@ -369,9 +366,12 @@ def callback(call):
             bot.send_message(call.message.chat.id, reply_markup=markup, parse_mode='HTML', text='<b>Страна!</b>\nЕсли твой бот локализован под определенную страну или группу стран, тогда выбери страну с целевыми пользователями. Если хочешь чтобы бот продвигался не зависимо от страны проживания пользователей, нажми - "Все страны".<a href="https://imbt.ga/rbJntgXEla">&#160;</a>')
         elif(command == 'sc'):
             bot.send_message(call.message.chat.id, parse_mode="HTML", text='Теперь пришли мне юзер или ссылку на твоего бота или канал.<a href="https://telegra.ph/file/7b0e662039812d457bc62.jpg">&#160;</a>')
+            
+            
             @bot.message_handler(content_types=['text'])
             def botid(message):
-                bot.send_message(message.chat.id, text=message.text)
+                bot_id = message.text
+                bot.send_message(message.chat.id, text='<b>Модерация!</b>\nИдёт модерация. После прохождения модерации я сообщу тебе о следующих этапах.<a href="https://telegra.ph/file/ff35a013de4c89a43f02c.jpg">&#160;</a>', parse_mode='HTML')
     
     except Exception as e:
         bot.send_message(uid, 'nope(')
