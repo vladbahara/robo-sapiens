@@ -268,22 +268,22 @@ def callback(call):
             bot.send_message(call.message.chat.id, reply_markup=markup, text="<b>Категории!</b>\nВыбери одну категорию, которой соответствует твой контент. Это позволит показывать твой контент только заинтересованным пользователям.<a href='https://imbt.ga/dZNsjMG61z'>&#160;</a>",  parse_mode='HTML')
 
         elif(command == 'add_channel_command'):
-            bot.send_message(uid, 'Add Channel')
+            bot.send_message(call.message.chat.id, 'Add Channel')
 
         elif(command == 'add_money'):
-            bot.send_message(uid, 'Add Money')
+            bot.send_message(call.message.chat.id, 'Add Money')
 
         elif(command == 'channel_stat'):
-            bot.send_message(uid, 'Channel Stat')
-
+            msg = bot.send_message(call.message.chat.id, '<b>Бот:</b> @ome33\nПереходов: 567 (2 цента за переход)\n💰 <b>11, 34$</b><a href="https://telegra.ph/file/954afb76178f388d7d4f6.jpg">&#160;</a>', parse_mode='HTML')
+                    
         elif(command == 'bot_stat'):
-            bot.send_message(uid, 'Bot Stat')
+            bot.send_message(call.message.chat.id, '<b>Канал:</b> @omfewfe3a3\nПереходов: 957 (2 цента за переход)\n💰 <b>19, 84$</b><a href="https://telegra.ph/file/8cde82c7e8f5f1c8ddf50.jpg">&#160;</a>', parse_mode='HTML')
 
         elif(command == 'search_bots'):
-            bot.send_message(uid, 'Search Bots')
+            bot.send_message(call.message.chat.id, 'Search Bots')
 
         elif(command == 'search_channels'):
-            bot.send_message(uid, 'Search Channels')
+            bot.send_message(call.message.chat.id, 'Search Channels')
 
         elif(command == 'change_prefs'):
             markup = types.InlineKeyboardMarkup()
@@ -295,35 +295,35 @@ def callback(call):
             markup.row(change_country)
             markup.row(change_content)
             markup.row(change_freq)
-            msg = bot.send_message(uid, '<b>Изменить интересы!</b>\nВыбирай какие именно интересы ты хочешь изменить.<a href="https://telegra.ph/file/8c2abab1d2ecfc76677d2.jpg">&#160;</a>', parse_mode='HTML', reply_markup=markup)
+            msg = bot.send_message(call.message.chat.id, '<b>Изменить интересы!</b>\nВыбирай какие именно интересы ты хочешь изменить.<a href="https://telegra.ph/file/8c2abab1d2ecfc76677d2.jpg">&#160;</a>', parse_mode='HTML', reply_markup=markup)
 
             @bot.callback_query_handler(func=lambda call: True)
             def callback(call):
                 bot.send_message(call.message.chat.id, 'adasdasdasdasdasd')
 
         elif(command == 'change_category'):
-            bot.send_message(uid, 'Change Category')
+            bot.send_message(call.message.chat.id, 'Change Category')
 
         elif(command == 'change_country'):
-            bot.send_message(uid, 'Change Country')
+            bot.send_message(call.message.chat.id, 'Change Country')
 
         elif(command == 'change_content'):
-            bot.send_message(uid, 'Change Content')
+            bot.send_message(call.message.chat.id, 'Change Content')
 
         elif(command == 'change_freq'):
-            msg = bot.send_message(uid, 'Change Freq')
+            msg = bot.send_message(call.message.chat.id, 'Change Freq')
 
         elif(command == 'one_per_day'):
-            bot.send_message(uid, '🕟 <b>Раз в день</b>\nОтлично, теперь я буду присылать раз в день интересного бота, или канал. Рассылка зависит от выбранных вами интересов.<a href="https://telegra.ph/file/06d026ea7f832d1c3c757.jpg">&#160;</a>', parse_mode="HTML")
+            bot.send_message(call.message.chat.id, '🕟 <b>Раз в день</b>\nОтлично, теперь я буду присылать раз в день интересного бота, или канал. Рассылка зависит от выбранных вами интересов.<a href="https://telegra.ph/file/06d026ea7f832d1c3c757.jpg">&#160;</a>', parse_mode="HTML")
 
         elif(command == 'two_per_day'):
-            bot.send_message(uid, '🕜 <b>Два в день</b>\nОтлично, теперь я буду присылать два раза в день интересного бота, или канал. Рассылка зависит от выбранных вами интересов.<a href="https://telegra.ph/file/06d026ea7f832d1c3c757.jpg">&#160;</a>', parse_mode="HTML")
+            bot.send_message(call.message.chat.id, '🕜 <b>Два в день</b>\nОтлично, теперь я буду присылать два раза в день интересного бота, или канал. Рассылка зависит от выбранных вами интересов.<a href="https://telegra.ph/file/06d026ea7f832d1c3c757.jpg">&#160;</a>', parse_mode="HTML")
 
         elif(command == 'one_per_two_days'):
-            bot.send_message(uid, '🕘 <b>Раз в 2 дня</b>\nОтлично, теперь я буду присылать раз в 2 дня интересного бота, или канал. Рассылка зависит от выбранных вами интересов.<a href="https://telegra.ph/file/06d026ea7f832d1c3c757.jpg">&#160;</a>', parse_mode="HTML")
+            bot.send_message(call.message.chat.id, '🕘 <b>Раз в 2 дня</b>\nОтлично, теперь я буду присылать раз в 2 дня интересного бота, или канал. Рассылка зависит от выбранных вами интересов.<a href="https://telegra.ph/file/06d026ea7f832d1c3c757.jpg">&#160;</a>', parse_mode="HTML")
 
         elif(command == 'one_per_three_days'):
-            bot.send_message(uid, '🕥 <b>Раз в 3 дня</b>\nОтлично, теперь я буду присылать раз в 3 дня интересного бота, или канал. Рассылка зависит от выбранных вами интересов.<a href="https://telegra.ph/file/06d026ea7f832d1c3c757.jpg">&#160;</a>', parse_mode="HTML")
+            bot.send_message(call.message.chat.id, '🕥 <b>Раз в 3 дня</b>\nОтлично, теперь я буду присылать раз в 3 дня интересного бота, или канал. Рассылка зависит от выбранных вами интересов.<a href="https://telegra.ph/file/06d026ea7f832d1c3c757.jpg">&#160;</a>', parse_mode="HTML")
         elif(command == 'saa'):
             markup = types.InlineKeyboardMarkup()
             c1 = types.InlineKeyboardButton(text='Россия', callback_data='sc')
@@ -369,11 +369,17 @@ def callback(call):
             
             @bot.message_handler(content_types=['text'])
             def botid(message):
-                bot_id = message.text
-                bot.send_message(message.chat.id, text='<b>Модерация!</b>\nИдёт модерация. После прохождения модерации я сообщу тебе о следующих этапах.<a href="https://telegra.ph/file/ff35a013de4c89a43f02c.jpg">&#160;</a>', parse_mode='HTML')
-    
+                mess = message.text
+                x = list(mess)
+                if x[0] == '@':
+                    msg = bot.send_message(message.chat.id, text='<b>Модерация!</b>\nИдёт модерация. После прохождения модерации я сообщу тебе о следующих этапах.<a href="https://telegra.ph/file/ff35a013de4c89a43f02c.jpg">&#160;</a>', parse_mode='HTML')
+                    bot.register_next_step_handler(msg, owner_menu)
+                else:
+                    msg = bot.send_message(message.chat.id, text='<b>Укажите корректное название канала или бота!</b>', parse_mode='HTML')
+                    bot.register_next_step_handler(msg, botid)
+
     except Exception as e:
-        bot.send_message(uid, 'nope(')
+        bot.send_message(call.message.chat.id, 'nope(')
         
     
 
