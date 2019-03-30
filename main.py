@@ -3,13 +3,52 @@ import logging
 import sqlite3
 import time
 
+import cherrypy
 import telebot
 from telebot import types
 
 from config import token
 
+WEBHOOK_HOST = '109.87.105.97'
+WEBHOOK_PORT = 443  # 443, 80, 88 или 8443 (порт должен быть открыт!)
+WEBHOOK_LISTEN = '0.0.0.0'  # На некоторых серверах придется указывать такой же IP, что и выше
+
+WEBHOOK_SSL_CERT = './webhook_cert.pem'  # Путь к сертификату
+WEBHOOK_SSL_PRIV = './webhook_pkey.pem'  # Путь к приватному ключу
+
+WEBHOOK_URL_BASE = "https://%s:%s" % (WEBHOOK_HOST, WEBHOOK_PORT)
+WEBHOOK_URL_PATH = "/%s/" % (token)
+
 logger = telebot.logger
 telebot.logger.setLevel(logging.DEBUG)
+
+class WebhookServer(object):
+    @cherrypy.expose
+    def index(self):
+        if 'content-length' in cherrypy.request.headers and \
+                        'content-type' in cherrypy.request.headers and \
+                        cherrypy.request.headers['content-type'] == 'application/json':
+            length = int(cherrypy.request.headers['content-length'])
+            json_string = cherrypy.request.body.read(length).decode("utf-8")
+            update = telebot.types.Update.de_json(json_string)
+            # Эта функция обеспечивает проверку входящего сообщения
+            bot.process_new_updates([update])
+            return ''
+        else:
+            raise cherrypy.HTTPError(403)
+
+bot.remove_webhook()
+bot.set_webhook(url=WEBHOOK_URL_BASE + WEBHOOK_URL_PATH, certificate=open(WEBHOOK_SSL_CERT, 'r'))
+
+cherrypy.config.update({
+    'server.socket_host': WEBHOOK_LISTEN,
+    'server.socket_port': WEBHOOK_PORT,
+    'server.ssl_module': 'builtin',
+    'server.ssl_certificate': WEBHOOK_SSL_CERT,
+    'server.ssl_private_key': WEBHOOK_SSL_PRIV
+})
+
+cherrypy.quickstart(WebhookServer(), WEBHOOK_URL_PATH, {'/': {}}
 
 bot = telebot.TeleBot(token)
 
@@ -71,7 +110,7 @@ def owner_menu(message):  # Владелец
 
         if(mess == u'📬 Рассказать друзьям'):
             markup = types.InlineKeyboardMarkup()
-            forward_btn = types.InlineKeyboardButton(text='📱 Отправить', url='https://t.me/share/url?url=https://t.me/RS_Media_Bot&text= FWFdfwsdf *dasdas*')
+            forward_btn = types.InlineKeyboardButton(text='📱 Отправить', url='https://t.me/share/url?url=https://t.me/RS_Media_Bot')
             markup.add(forward_btn)
             msg = bot.send_message(message.chat.id, f'Я бот который поможет рассказать о твоём боте или канале тем пользователям, которых это может заинтересовать. Рассылка делается на основании интересов которые заполнили пользователи, так что они будут получать только качественный и интересный контент.<a href="https://imbt.ga/2bLbzibnr0">&#160;</a>', reply_markup=markup, parse_mode='HTML')
             bot.register_next_step_handler(msg, owner_menu)
