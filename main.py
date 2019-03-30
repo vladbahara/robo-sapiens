@@ -9,6 +9,8 @@ from telebot import types
 
 from config import token
 
+bot = telebot.TeleBot(token)
+
 WEBHOOK_HOST = '109.87.105.97'
 WEBHOOK_PORT = 443  # 443, 80, 88 или 8443 (порт должен быть открыт!)
 WEBHOOK_LISTEN = '0.0.0.0'  # На некоторых серверах придется указывать такой же IP, что и выше
@@ -50,7 +52,7 @@ cherrypy.config.update({
 
 cherrypy.quickstart(WebhookServer(), WEBHOOK_URL_PATH, {'/': {}})
 
-bot = telebot.TeleBot(token)
+
 
 money = 0.65
 
