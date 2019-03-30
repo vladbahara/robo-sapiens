@@ -7,12 +7,11 @@ from telebot import types
 from config import token
 
 
+
 logger = telebot.logger
 telebot.logger.setLevel(logging.DEBUG)
 
 bot = telebot.TeleBot(token)
-
-money = 0.65
 
 
 
@@ -27,17 +26,58 @@ def empty_command(message):
 
 @bot.message_handler(commands=['start'])
 def start(message):
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    markup.add('🏬 Владелец', '🚶‍ Пользователь')
-    msg = bot.send_message(message.chat.id, 'Выбери аккаунт, кем хочешь быть!', reply_markup=markup)
-    bot.register_next_step_handler(msg, manage)
+    user = (message.from_user.id, message.from_user.username, message.from_user.first_name)
+    conn = sqlite3.connect('robo_users')
+    cursor = conn.cursor()
+    cursor.execute(f'SELECT ID FROM users WHERE ID = {user[0]}')
+    res = cursor.fetchall()
+
+    if res == []:
+        cursor.execute("INSERT into users (ID, UN, NAME, MONEY) values (?, ?, ?, 0.0)", user)
+        conn.commit()
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        markup.add('🏬 Владелец', '🚶‍ Пользователь')
+        msg = bot.send_message(message.chat.id, 'Выбери аккаунт, кем хочешь быть!', reply_markup=markup)
+        bot.register_next_step_handler(msg, manage)
+        conn.close()
+    elif res != []:
+        cursor.execute(f'SELECT ACCOUNT FROM users WHERE ID = {user[0]}')
+        r = cursor.fetchall()
+        if r[0][0] == 'owner':
+            conn.close()
+            markup = types.ReplyKeyboardMarkup(one_time_keyboard=False)
+            markup.row('📬 Рассказать друзьям')
+            markup.row('Разместить бота, канал')
+            markup.row('Мой счёт')
+            markup.row('Статистика продвижения')
+            markup.row('🏬 Изменить аккаунт')
+            msg = bot.send_message(message.chat.id, 'Меню', reply_markup=markup)
+            bot.register_next_step_handler(msg, owner_menu)
+            
+        elif r[0][0] == 'user':
+            conn.close()
+            markup = types.ReplyKeyboardMarkup(one_time_keyboard=False)
+            markup.row('📬 Рассказать друзьям')
+            markup.row('Поиск')
+            markup.row('Изменить интересы')
+            markup.row('Частота рассылки')
+            markup.row('🏬 Изменить аккаунт')
+            msg = bot.send_message(message.chat.id, 'Меню', reply_markup=markup)
+            bot.register_next_step_handler(msg, user_menu)
+            conn.close()
 
 
 def manage(message):
     try:
         mess = message.text
+        user = message.from_user.id
+        conn = sqlite3.connect('robo_users')
+        cursor = conn.cursor()
 
         if(mess == u'🏬 Владелец'):
+            cursor.execute(f"INSERT into users (ACCOUNT) values ('owner') WHERE ID = {user}")
+            conn.commit()
+            conn.close()
             markup = types.ReplyKeyboardMarkup(one_time_keyboard=False)
             markup.row('📬 Рассказать друзьям')
             markup.row('Разместить бота, канал')
@@ -48,6 +88,9 @@ def manage(message):
             bot.register_next_step_handler(msg, owner_menu)
 
         elif (mess == u'🚶‍ Пользователь'):
+            cursor.execute(f"INSERT into users (ACCOUNT) values ('user') WHERE ID = {user}")
+            conn.commit()
+            conn.close()
             markup = types.ReplyKeyboardMarkup(one_time_keyboard=False)
             markup.row('📬 Рассказать друзьям')
             markup.row('Поиск')
@@ -57,10 +100,16 @@ def manage(message):
             msg = bot.send_message(message.chat.id, 'Меню', reply_markup=markup)
             bot.register_next_step_handler(msg, user_menu)
         else:
+            conn.close()
             raise Exception()
+        
 
     except Exception as e:
-        bot.send_message(message.chat.id, 'Ошибочка( 1')
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        markup.add('🏬 Владелец', '🚶‍ Пользователь')
+        msg = bot.send_message(message.chat.id, 'Выбери аккаунт, кем хочешь быть!', reply_markup=markup)
+        bot.register_next_step_handler(msg, manage)
+
 
 
 def owner_menu(message):  # Владелец
@@ -72,7 +121,7 @@ def owner_menu(message):  # Владелец
             markup = types.InlineKeyboardMarkup()
             forward_btn = types.InlineKeyboardButton(text='📱 Отправить', url='https://t.me/share/url?url=https://t.me/RS_Media_Bot&text= FWFdfwsdf *dasdas*')
             markup.add(forward_btn)
-            msg = bot.send_message(message.chat.id, f'Я бот который поможет рассказать о твоём боте или канале тем пользователям, которых это может заинтересовать. Рассылка делается на основании интересов которые заполнили пользователи, так что они будут получать только качественный и интересный контент.<a href="https://imbt.ga/2bLbzibnr0">&#160;</a>', reply_markup=markup, parse_mode='HTML')
+            msg = bot.send_message(message.chat.id, 'Я бот который поможет рассказать о твоём боте или канале тем пользователям, которых это может заинтересовать. Рассылка делается на основании интересов которые заполнили пользователи, так что они будут получать только качественный и интересный контент.<a href="https://imbt.ga/2bLbzibnr0">&#160;</a>', reply_markup=markup, parse_mode='HTML')
             bot.register_next_step_handler(msg, owner_menu)
 
         elif (mess == u'Разместить бота, канал'):
@@ -271,13 +320,18 @@ def callback(call):
             bot.send_message(call.message.chat.id, 'Add Channel')
 
         elif(command == 'add_money'):
+            user = call.message.from_user.id
+            conn = sqlite3.connect('robo_users')
+            cursor = conn.cursor()
+            cursor.execute(f"INSERT into users (MONEY) values (25.2) WHERE ID = {user}")
+            conn.close()
             bot.send_message(call.message.chat.id, 'Add Money')
 
         elif(command == 'channel_stat'):
             msg = bot.send_message(call.message.chat.id, '<b>Бот:</b> @ome33\nПереходов: 567 (2 цента за переход)\n💰 <b>11, 34$</b><a href="https://telegra.ph/file/954afb76178f388d7d4f6.jpg">&#160;</a>', parse_mode='HTML')
                     
         elif(command == 'bot_stat'):
-            bot.send_message(call.message.chat.id, '<b>Канал:</b> @omfewfe3a3\nПереходов: 957 (2 цента за переход)\n💰 <b>19, 84$</b><a href="https://telegra.ph/file/8cde82c7e8f5f1c8ddf50.jpg">&#160;</a>', parse_mode='HTML')
+            bot.send_message(call.message.chat.id, '<b>Канал:</b> @omfewfe3a3\nПереходов: 957 (2 цента за переход)\n💰 <b>19, 84$</b><a href="https://telegra.ph/file/8cde82c7e8f5f1c8ddf50.jpg">&#160;</a>', )
 
         elif(command == 'search_bots'):
             bot.send_message(call.message.chat.id, 'Search Bots')
