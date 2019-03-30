@@ -12,7 +12,11 @@ from config import token
 bot = telebot.TeleBot(token)
 
 WEBHOOK_HOST = '109.87.105.97'
+<<<<<<< HEAD
 WEBHOOK_PORT = 88  # 443, 80, 88 или 8443 (порт должен быть открыт!)
+=======
+WEBHOOK_PORT = 80  # 443, 80, 88 или 8443 (порт должен быть открыт!)
+>>>>>>> d378901aa5d3ac06fa0c61df8afd8f46ccc35d22
 WEBHOOK_LISTEN = '0.0.0.0'  # На некоторых серверах придется указывать такой же IP, что и выше
 
 WEBHOOK_SSL_CERT = './ssl/webhook_cert.pem'  # Путь к сертификату
