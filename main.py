@@ -48,7 +48,7 @@ cherrypy.config.update({
     'server.ssl_private_key': WEBHOOK_SSL_PRIV
 })
 
-cherrypy.quickstart(WebhookServer(), WEBHOOK_URL_PATH, {'/': {}}
+cherrypy.quickstart(WebhookServer(), WEBHOOK_URL_PATH, {'/': {}})
 
 bot = telebot.TeleBot(token)
 
