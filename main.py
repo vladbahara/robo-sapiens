@@ -33,16 +33,18 @@ def start(message):
     res = cursor.fetchall()
 
     if res == []:
-        cursor.execute("INSERT into users (ID, UN, NAME, MONEY) values (?, ?, ?, 0.0)", user)
+        cursor.execute("INSERT INTO users (ID, UN, NAME, ACCOUNT, MONEY) VALUES (?, ?, ?, 'user', 0.0)", user)
         conn.commit()
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
         markup.add('🏬 Владелец', '🚶‍ Пользователь')
-        msg = bot.send_message(message.chat.id, 'Выбери аккаунт, кем хочешь быть!', reply_markup=markup)
+        msg = bot.send_message(message.chat.id, 'Выбери аккаунт, кем хочешь быть 1!', reply_markup=markup)
         bot.register_next_step_handler(msg, manage)
         conn.close()
+        
     elif res != []:
         cursor.execute(f'SELECT ACCOUNT FROM users WHERE ID = {user[0]}')
         r = cursor.fetchall()
+        print(r)
         if r[0][0] == 'owner':
             conn.close()
             markup = types.ReplyKeyboardMarkup(one_time_keyboard=False)
@@ -64,7 +66,13 @@ def start(message):
             markup.row('🏬 Изменить аккаунт')
             msg = bot.send_message(message.chat.id, 'Меню', reply_markup=markup)
             bot.register_next_step_handler(msg, user_menu)
+        else:
+            bot.send_message(message.chat.id, 'Россия хуле! 1')
             conn.close()
+        
+    else:
+        bot.send_message(message.chat.id, 'Россия хуле! 2')
+        conn.close()
 
 
 def manage(message):
@@ -75,9 +83,12 @@ def manage(message):
         cursor = conn.cursor()
 
         if(mess == u'🏬 Владелец'):
-            cursor.execute(f"INSERT into users (ACCOUNT) values ('owner') WHERE ID = {user}")
-            conn.commit()
-            conn.close()
+            try:
+                cursor.execute(f"UPDATE users SET ACCOUNT = 'owner' WHERE ID = {user}")
+                conn.commit()
+                conn.close()
+            except sqlite3.DatabaseError as err:       
+                print("Error: ", err)
             markup = types.ReplyKeyboardMarkup(one_time_keyboard=False)
             markup.row('📬 Рассказать друзьям')
             markup.row('Разместить бота, канал')
@@ -88,9 +99,12 @@ def manage(message):
             bot.register_next_step_handler(msg, owner_menu)
 
         elif (mess == u'🚶‍ Пользователь'):
-            cursor.execute(f"INSERT into users (ACCOUNT) values ('user') WHERE ID = {user}")
-            conn.commit()
-            conn.close()
+            try:
+                cursor.execute(f"UPDATE users SET ACCOUNT = 'user' WHERE ID = {user}")
+                conn.commit()
+                conn.close()
+            except sqlite3.DatabaseError as err:       
+                print("\nError: ", err, '\n')
             markup = types.ReplyKeyboardMarkup(one_time_keyboard=False)
             markup.row('📬 Рассказать друзьям')
             markup.row('Поиск')
@@ -99,54 +113,57 @@ def manage(message):
             markup.row('🏬 Изменить аккаунт')
             msg = bot.send_message(message.chat.id, 'Меню', reply_markup=markup)
             bot.register_next_step_handler(msg, user_menu)
+        elif (mess == '/start'):
+            msg = bot.send_message(message.chat.id, 'Меню', reply_markup=markup)
+            start(msg)
         else:
             conn.close()
             raise Exception()
         
 
     except Exception as e:
-        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        markup.add('🏬 Владелец', '🚶‍ Пользователь')
-        msg = bot.send_message(message.chat.id, 'Выбери аккаунт, кем хочешь быть!', reply_markup=markup)
-        bot.register_next_step_handler(msg, manage)
+        conn.close()
+        start(message)
 
 
 
 def owner_menu(message):  # Владелец
-
+    conn = sqlite3.connect('robo_users')
+    cursor = conn.cursor()
     try:
         mess = message.text
 
         if(mess == u'📬 Рассказать друзьям'):
             markup = types.InlineKeyboardMarkup()
-            forward_btn = types.InlineKeyboardButton(text='📱 Отправить', url='https://t.me/share/url?url=https://t.me/RS_Media_Bot&text= FWFdfwsdf *dasdas*')
+            forward_btn = types.InlineKeyboardButton(text='📱 Отправить', url='https://t.me/share/url?url=https://t.me/RS_Media_Bot')
             markup.add(forward_btn)
             msg = bot.send_message(message.chat.id, 'Я бот который поможет рассказать о твоём боте или канале тем пользователям, которых это может заинтересовать. Рассылка делается на основании интересов которые заполнили пользователи, так что они будут получать только качественный и интересный контент.<a href="https://imbt.ga/2bLbzibnr0">&#160;</a>', reply_markup=markup, parse_mode='HTML')
             bot.register_next_step_handler(msg, owner_menu)
 
         elif (mess == u'Разместить бота, канал'):
-            try:
-                markup = types.InlineKeyboardMarkup()
-                add_bot = types.InlineKeyboardButton(text='Разместить бота', callback_data='add_bot_command')
-                add_channel = types.InlineKeyboardButton(text='Разместить канал', callback_data='add_channel_command')
-                markup.row(add_bot)
-                markup.row(add_channel)
-                msg = bot.send_message(message.chat.id, '<b>Разместить бота, канал!</b>\nВыбери, что именно ты хочешь разместить. Бота или канал?<a href="https://imbt.ga/nwmnR4wpIZ">&#160;</a>', parse_mode='HTML', reply_markup=markup)
-            except Exception as e:    
-                bot.register_next_step_handler(msg, owner_menu)
+            
+            markup = types.InlineKeyboardMarkup()
+            add_bot = types.InlineKeyboardButton(text='Разместить бота', callback_data='add_bot_command')
+            add_channel = types.InlineKeyboardButton(text='Разместить канал', callback_data='add_channel_command')
+            markup.row(add_bot)
+            markup.row(add_channel)
+            msg = bot.send_message(message.chat.id, '<b>Разместить бота, канал!</b>\nВыбери, что именно ты хочешь разместить. Бота или канал?<a href="https://imbt.ga/nwmnR4wpIZ">&#160;</a>', parse_mode='HTML', reply_markup=markup)
+                
             
 
 
         elif (mess == u'Мой счёт'):
+            cursor.execute(f'SELECT MONEY FROM users WHERE ID = {message.from_user.id}')
+            money = cursor.fetchall()
             markup = types.InlineKeyboardMarkup()
             add_money = types.InlineKeyboardButton(text='💰 Пополнить счёт', callback_data='add_money')
             markup.add(add_money)
-
-            if money < 1.0:
-                msg = bot.send_message(message.chat.id, text=f'<b>Мой счёт!</b>\nЧтобы продвигать бота, на счету должно быть не менее 1$.<a href="https://imbt.ga/UlmN4K1cot">&#160;</a>\n💰  <b>{money} $</b>', parse_mode='HTML', reply_markup=markup)
+            conn.close()
+            if money[0][0] < 1.0:
+                msg = bot.send_message(message.chat.id, text=f'<b>Мой счёт!</b>\nЧтобы продвигать бота, на счету должно быть не менее 1$.<a href="https://imbt.ga/UlmN4K1cot">&#160;</a>\n💰  <b>{money[0][0]} $</b>', parse_mode='HTML', reply_markup=markup)
                 bot.register_next_step_handler(msg, owner_menu)
             else:
-                msg = bot.send_message(message.chat.id, text=f'<b>Мой счёт!</b>\nКаждый целевой переход в бота или канал стоит 2 цента.<a href="https://imbt.ga/UlmN4K1cot">&#160;</a>\n💰  <b>{money} $</b>', parse_mode='HTML', reply_markup=markup)
+                msg = bot.send_message(message.chat.id, text=f'<b>Мой счёт!</b>\nКаждый целевой переход в бота или канал стоит 2 цента.<a href="https://imbt.ga/UlmN4K1cot">&#160;</a>\n💰  <b>{money[0][0]} $</b>', parse_mode='HTML', reply_markup=markup)
                 bot.register_next_step_handler(msg, owner_menu)
 
         elif (mess == u'Статистика продвижения'):
@@ -161,19 +178,17 @@ def owner_menu(message):  # Владелец
         elif (mess == u'🏬 Изменить аккаунт'):
             markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=False)
             markup.add('🏬 Владелец', '🚶‍ Пользователь')
-            msg = bot.send_message(message.chat.id, 'Выбери аккаунт, кем хочешь быть!', reply_markup=markup)
+            msg = bot.send_message(message.chat.id, 'Выбери аккаунт, кем хочешь быть! 3', reply_markup=markup)
             bot.register_next_step_handler(msg, manage)
 
         elif (mess == u'/start'):
-            markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=False)
-            markup.add('🏬 Владелец', '🚶‍ Пользователь')
-            msg = bot.send_message(message.chat.id, 'Выбери аккаунт, кем хочешь быть!', reply_markup=markup)
-            bot.register_next_step_handler(msg, manage)
+            start(message)
         else:
+            conn.close()
             raise Exception()
 
     except Exception as e:
-        msg = bot.send_message(message.chat.id, 'Ошибочка( 2')
+        msg = bot.send_message(message.chat.id, 'Выберите один из пунктов!')
         bot.register_next_step_handler(msg, owner_menu)
 
 
@@ -248,9 +263,10 @@ def user_menu(message):  # Пользователь
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback(call):
+    conn = sqlite3.connect('robo_users')
+    cursor = conn.cursor()
     command = call.data
-    
-    uid = call.message.chat.id
+    user = call.message.chat.id
     try:
         if(command == 'add_bot_command'):
             markup = types.InlineKeyboardMarkup()
@@ -320,12 +336,10 @@ def callback(call):
             bot.send_message(call.message.chat.id, 'Add Channel')
 
         elif(command == 'add_money'):
-            user = call.message.from_user.id
-            conn = sqlite3.connect('robo_users')
-            cursor = conn.cursor()
-            cursor.execute(f"INSERT into users (MONEY) values (25.2) WHERE ID = {user}")
+            cursor.execute(f"UPDATE users SET MONEY = (25.2) WHERE ID = {user}")
+            conn.commit()
             conn.close()
-            bot.send_message(call.message.chat.id, 'Add Money')
+            bot.send_message(call.message.chat.id, 'Add Some Demo Money')
 
         elif(command == 'channel_stat'):
             msg = bot.send_message(call.message.chat.id, '<b>Бот:</b> @ome33\nПереходов: 567 (2 цента за переход)\n💰 <b>11, 34$</b><a href="https://telegra.ph/file/954afb76178f388d7d4f6.jpg">&#160;</a>', parse_mode='HTML')
@@ -365,18 +379,40 @@ def callback(call):
             bot.send_message(call.message.chat.id, 'Change Content')
 
         elif(command == 'change_freq'):
-            msg = bot.send_message(call.message.chat.id, 'Change Freq')
+            markup = types.InlineKeyboardMarkup()
+            one_per_day = types.InlineKeyboardButton(text='🕟 Раз в день', callback_data='one_per_day')
+            two_per_day = types.InlineKeyboardButton(text='🕘 Два в день', callback_data='two_per_day')
+            one_per_two_days = types.InlineKeyboardButton(text='🕜 Раз в 2 дня', callback_data='one_per_two_days')
+            one_per_three_days = types.InlineKeyboardButton(text='🕥 Раз в 3 дня', callback_data='one_per_three_days')
+            markup.row(one_per_day)
+            markup.row(two_per_day)
+            markup.row(one_per_two_days)
+            markup.row(one_per_three_days)
+            msg = bot.send_message(message.chat.id, '<b>Частота рассылки!</b>\nКак часто ты хочешь получить россылку каналов и ботов подобранных индивидуально для тебя?<a href="https://imbt.ga/UuCEyp73zo">&#160;</a>', parse_mode='HTML', reply_markup=markup)
+            bot.register_next_step_handler(msg, user_menu)
 
         elif(command == 'one_per_day'):
+            cursor.execute(f"UPDATE users SET FREQ = 'one_per_day' WHERE ID = {user}")
+            conn.commit()
+            conn.close()
             bot.send_message(call.message.chat.id, '🕟 <b>Раз в день</b>\nОтлично, теперь я буду присылать раз в день интересного бота, или канал. Рассылка зависит от выбранных вами интересов.<a href="https://telegra.ph/file/06d026ea7f832d1c3c757.jpg">&#160;</a>', parse_mode="HTML")
 
         elif(command == 'two_per_day'):
+            cursor.execute(f"UPDATE users SET FREQ = 'two_per_day' WHERE ID = {user}")
+            conn.commit()
+            conn.close()
             bot.send_message(call.message.chat.id, '🕜 <b>Два в день</b>\nОтлично, теперь я буду присылать два раза в день интересного бота, или канал. Рассылка зависит от выбранных вами интересов.<a href="https://telegra.ph/file/06d026ea7f832d1c3c757.jpg">&#160;</a>', parse_mode="HTML")
 
         elif(command == 'one_per_two_days'):
+            cursor.execute(f"UPDATE users SET FREQ = 'one_per_two_days' WHERE ID = {user}")
+            conn.commit()
+            conn.close()
             bot.send_message(call.message.chat.id, '🕘 <b>Раз в 2 дня</b>\nОтлично, теперь я буду присылать раз в 2 дня интересного бота, или канал. Рассылка зависит от выбранных вами интересов.<a href="https://telegra.ph/file/06d026ea7f832d1c3c757.jpg">&#160;</a>', parse_mode="HTML")
 
         elif(command == 'one_per_three_days'):
+            cursor.execute(f"UPDATE users SET FREQ = 'one_per_three_days' WHERE ID = {user}")
+            conn.commit()
+            conn.close()
             bot.send_message(call.message.chat.id, '🕥 <b>Раз в 3 дня</b>\nОтлично, теперь я буду присылать раз в 3 дня интересного бота, или канал. Рассылка зависит от выбранных вами интересов.<a href="https://telegra.ph/file/06d026ea7f832d1c3c757.jpg">&#160;</a>', parse_mode="HTML")
         elif(command == 'saa'):
             markup = types.InlineKeyboardMarkup()
