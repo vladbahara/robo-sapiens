@@ -3,10 +3,9 @@ import logging
 import sqlite3
 import time
 import telebot
+import random
 from telebot import types
 from config import token
-
-
 
 logger = telebot.logger
 telebot.logger.setLevel(logging.DEBUG)
@@ -14,14 +13,12 @@ telebot.logger.setLevel(logging.DEBUG)
 bot = telebot.TeleBot(token)
 
 
-
-
 @bot.message_handler(commands=[''])
 def empty_command(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     markup.add('/start')
-    msg = bot.send_message(message.chat.id, 'Нажимай старт!', reply_markup=markup)
-    bot.register_next_step_handler(msg, start)
+    bot.send_message(message.chat.id, 'Нажимай старт!', reply_markup=markup)
+    bot.register_next_step_handler(message, start)
 
 
 @bot.message_handler(commands=['start'])
@@ -30,21 +27,21 @@ def start(message):
     conn = sqlite3.connect('robo_users')
     cursor = conn.cursor()
     cursor.execute(f'SELECT ID FROM users WHERE ID = {user[0]}')
-    res = cursor.fetchall()
+    response = cursor.fetchall()
 
-    if res == []:
+    if response == []:
         cursor.execute("INSERT INTO users (ID, UN, NAME, ACCOUNT, MONEY) VALUES (?, ?, ?, 'user', 0.0)", user)
         conn.commit()
+        conn.close()
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
         markup.add('🏬 Владелец', '🚶‍ Пользователь')
-        msg = bot.send_message(message.chat.id, 'Выбери аккаунт, кем хочешь быть 1!', reply_markup=markup)
+        msg = bot.send_message(message.chat.id, 'Выбери аккаунт, кем хочешь быть!', reply_markup=markup)
         bot.register_next_step_handler(msg, manage)
-        conn.close()
         
-    elif res != []:
+        
+    elif response != []:
         cursor.execute(f'SELECT ACCOUNT FROM users WHERE ID = {user[0]}')
         r = cursor.fetchall()
-        print(r)
         if r[0][0] == 'owner':
             conn.close()
             markup = types.ReplyKeyboardMarkup(one_time_keyboard=False)
@@ -53,8 +50,8 @@ def start(message):
             markup.row('Мой счёт')
             markup.row('Статистика продвижения')
             markup.row('🏬 Изменить аккаунт')
-            msg = bot.send_message(message.chat.id, 'Меню', reply_markup=markup)
-            bot.register_next_step_handler(msg, owner_menu)
+            bot.send_message(message.chat.id, 'Меню', reply_markup=markup)
+            bot.register_next_step_handler(message, owner_menu)
             
         elif r[0][0] == 'user':
             conn.close()
@@ -64,15 +61,16 @@ def start(message):
             markup.row('Изменить интересы')
             markup.row('Частота рассылки')
             markup.row('🏬 Изменить аккаунт')
-            msg = bot.send_message(message.chat.id, 'Меню', reply_markup=markup)
-            bot.register_next_step_handler(msg, user_menu)
+            bot.send_message(message.chat.id, 'Меню', reply_markup=markup)
+            bot.register_next_step_handler(message, user_menu)
+
         else:
-            bot.send_message(message.chat.id, 'Россия хуле! 1')
             conn.close()
+            bot.send_message(message.chat.id, 'Россия хуле! 1')
         
     else:
-        bot.send_message(message.chat.id, 'Россия хуле! 2')
         conn.close()
+        bot.send_message(message.chat.id, 'Россия хуле! 2')
 
 
 def manage(message):
@@ -95,8 +93,8 @@ def manage(message):
             markup.row('Мой счёт')
             markup.row('Статистика продвижения')
             markup.row('🏬 Изменить аккаунт')
-            msg = bot.send_message(message.chat.id, 'Меню', reply_markup=markup)
-            bot.register_next_step_handler(msg, owner_menu)
+            bot.send_message(message.chat.id, 'Меню', reply_markup=markup)
+            bot.register_next_step_handler(message, owner_menu)
 
         elif (mess == u'🚶‍ Пользователь'):
             try:
@@ -111,20 +109,19 @@ def manage(message):
             markup.row('Изменить интересы')
             markup.row('Частота рассылки')
             markup.row('🏬 Изменить аккаунт')
-            msg = bot.send_message(message.chat.id, 'Меню', reply_markup=markup)
-            bot.register_next_step_handler(msg, user_menu)
+            bot.send_message(message.chat.id, 'Меню', reply_markup=markup)
+            bot.register_next_step_handler(message, user_menu)
         elif (mess == '/start'):
-            msg = bot.send_message(message.chat.id, 'Меню', reply_markup=markup)
-            start(msg)
+            conn.close()
+            bot.send_message(message.chat.id, 'Меню', reply_markup=markup)
+            bot.register_next_step_handler(message, start)
         else:
             conn.close()
             raise Exception()
         
-
     except Exception as e:
         conn.close()
-        start(message)
-
+        bot.register_next_step_handler(message, start)
 
 
 def owner_menu(message):  # Владелец
@@ -137,8 +134,8 @@ def owner_menu(message):  # Владелец
             markup = types.InlineKeyboardMarkup()
             forward_btn = types.InlineKeyboardButton(text='📱 Отправить', url='https://t.me/share/url?url=https://t.me/RS_Media_Bot')
             markup.add(forward_btn)
-            msg = bot.send_message(message.chat.id, 'Я бот который поможет рассказать о твоём боте или канале тем пользователям, которых это может заинтересовать. Рассылка делается на основании интересов которые заполнили пользователи, так что они будут получать только качественный и интересный контент.<a href="https://imbt.ga/2bLbzibnr0">&#160;</a>', reply_markup=markup, parse_mode='HTML')
-            bot.register_next_step_handler(msg, owner_menu)
+            bot.send_message(message.chat.id, 'Я бот который поможет рассказать о твоём боте или канале тем пользователям, которых это может заинтересовать. Рассылка делается на основании интересов которые заполнили пользователи, так что они будут получать только качественный и интересный контент.<a href="https://imbt.ga/2bLbzibnr0">&#160;</a>', reply_markup=markup, parse_mode='HTML')
+            bot.register_next_step_handler(message, owner_menu)
 
         elif (mess == u'Разместить бота, канал'):
             
@@ -147,10 +144,7 @@ def owner_menu(message):  # Владелец
             add_channel = types.InlineKeyboardButton(text='Разместить канал', callback_data='add_channel_command')
             markup.row(add_bot)
             markup.row(add_channel)
-            msg = bot.send_message(message.chat.id, '<b>Разместить бота, канал!</b>\nВыбери, что именно ты хочешь разместить. Бота или канал?<a href="https://imbt.ga/nwmnR4wpIZ">&#160;</a>', parse_mode='HTML', reply_markup=markup)
-                
-            
-
+            bot.send_message(message.chat.id, '<b>Разместить бота, канал!</b>\nВыбери, что именно ты хочешь разместить. Бота или канал?<a href="https://imbt.ga/nwmnR4wpIZ">&#160;</a>', parse_mode='HTML', reply_markup=markup)
 
         elif (mess == u'Мой счёт'):
             cursor.execute(f'SELECT MONEY FROM users WHERE ID = {message.from_user.id}')
@@ -160,36 +154,40 @@ def owner_menu(message):  # Владелец
             markup.add(add_money)
             conn.close()
             if money[0][0] < 1.0:
-                msg = bot.send_message(message.chat.id, text=f'<b>Мой счёт!</b>\nЧтобы продвигать бота, на счету должно быть не менее 1$.<a href="https://imbt.ga/UlmN4K1cot">&#160;</a>\n💰  <b>{money[0][0]} $</b>', parse_mode='HTML', reply_markup=markup)
-                bot.register_next_step_handler(msg, owner_menu)
+                bot.send_message(message.chat.id, text=f'<b>Мой счёт!</b>\nЧтобы продвигать бота, на счету должно быть не менее 1$.<a href="https://imbt.ga/UlmN4K1cot">&#160;</a>\n💰  <b>{money[0][0]} $</b>', parse_mode='HTML', reply_markup=markup)
+                bot.register_next_step_handler(message, owner_menu)
             else:
-                msg = bot.send_message(message.chat.id, text=f'<b>Мой счёт!</b>\nКаждый целевой переход в бота или канал стоит 2 цента.<a href="https://imbt.ga/UlmN4K1cot">&#160;</a>\n💰  <b>{money[0][0]} $</b>', parse_mode='HTML', reply_markup=markup)
-                bot.register_next_step_handler(msg, owner_menu)
+                bot.send_message(message.chat.id, text=f'<b>Мой счёт!</b>\nКаждый целевой переход в бота или канал стоит 2 цента.<a href="https://imbt.ga/UlmN4K1cot">&#160;</a>\n💰  <b>{money[0][0]} $</b>', parse_mode='HTML', reply_markup=markup)
+                bot.register_next_step_handler(message, owner_menu)
 
         elif (mess == u'Статистика продвижения'):
             markup = types.InlineKeyboardMarkup()
-            stat_channel_1 = types.InlineKeyboardButton(text='@some_channel', callback_data='channel_stat')
-            stat_bot_1 = types.InlineKeyboardButton(text='@some_bot', callback_data='bot_stat')
+            cursor.execute(f'SELECT * FROM BAC_DB WHERE ID_OF_OWNER = {user}')
+            res = cursor.fetchall()
+            conn.close()
+            for i in range(len(res)):
+                print(res[i][2])
+                stat_channel_1 = types.InlineKeyboardButton(text='@some_channel', callback_data='statistic')
             markup.row(stat_channel_1)
             markup.row(stat_bot_1)
-            msg = bot.send_message(message.chat.id, '<b>Статистика продвижения!</b>\nЗдесь будет отображаться статистика продвижения твоих ботов или каналов.<a href="https://imbt.ga/9z884zDX1w">&#160;</a>', parse_mode='HTML', reply_markup=markup)
-            bot.register_next_step_handler(msg, owner_menu)
+            bot.send_message(message.chat.id, '<b>Статистика продвижения!</b>\nЗдесь будет отображаться статистика продвижения твоих ботов или каналов.<a href="https://imbt.ga/9z884zDX1w">&#160;</a>', parse_mode='HTML', reply_markup=markup)
+            bot.register_next_step_handler(message, owner_menu)
 
         elif (mess == u'🏬 Изменить аккаунт'):
             markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=False)
             markup.add('🏬 Владелец', '🚶‍ Пользователь')
-            msg = bot.send_message(message.chat.id, 'Выбери аккаунт, кем хочешь быть! 3', reply_markup=markup)
-            bot.register_next_step_handler(msg, manage)
+            bot.send_message(message.chat.id, 'Выбери аккаунт, кем хочешь быть!', reply_markup=markup)
+            bot.register_next_step_handler(message, manage)
 
         elif (mess == u'/start'):
-            start(message)
+            bot.register_next_step_handler(message, start)
         else:
             conn.close()
             raise Exception()
 
     except Exception as e:
-        msg = bot.send_message(message.chat.id, 'Выберите один из пунктов!')
-        bot.register_next_step_handler(msg, owner_menu)
+        bot.send_message(message.chat.id, 'Выберите один из пунктов!')
+        bot.register_next_step_handler(message, owner_menu)
 
 
 def user_menu(message):  # Пользователь
@@ -198,10 +196,10 @@ def user_menu(message):  # Пользователь
 
         if(mess == u'📬 Рассказать друзьям'):
             markup = types.InlineKeyboardMarkup()
-            share_btn = types.InlineKeyboardButton(text='📱 Отправить', url='https://t.me/share/url?url=https://t.me/RS_Media_Bot')
+            share_btn = types.InlineKeyboardButton(text='📱 Отправить', url='https://t.me/share/url?url=https://t.me/RS_Media_Bot&text= Это бот который на основе твоих интересов будет делать индивидуальную рассылку ботов и каналов. Также ты можешь искать нужный контент самостоятельно.')
             markup.add(share_btn)
-            msg = bot.send_message(message.chat.id, 'Я бот который на основе твоих интересов будет делать индивидуальную рассылку ботов и каналов. Также ты можешь искать нужный контент самостоятельно.<a href="https://imbt.ga/2bLbzibnr0">&#160;</a>', reply_markup=markup, parse_mode='HTML')
-            bot.register_next_step_handler(msg, user_menu)
+            bot.send_message(message.chat.id, 'Я бот который на основе твоих интересов будет делать индивидуальную рассылку ботов и каналов. Также ты можешь искать нужный контент самостоятельно.<a href="https://imbt.ga/2bLbzibnr0">&#160;</a>', reply_markup=markup, parse_mode='HTML')
+            bot.register_next_step_handler(message, user_menu)
 
         elif (mess == u'Поиск'):
             markup = types.InlineKeyboardMarkup()
@@ -211,8 +209,8 @@ def user_menu(message):  # Пользователь
             markup.row(search_bots)
             markup.row(search_channel)
             markup.row(change_pref)
-            msg = bot.send_message(message.chat.id, '<b>Поиск!</b>\nНиже выбери что именно ты хочешь найти. Я ищу боты и каналы по твоим интересам которые ты выбрал. Чтобы изменить результаты поиска, измени свои интересы.<a href="https://imbt.ga/9z884zDX1w">&#160;</a>', parse_mode='HTML', reply_markup=markup)
-            bot.register_next_step_handler(msg, user_menu)
+            bot.send_message(message.chat.id, '<b>Поиск!</b>\nНиже выбери что именно ты хочешь найти. Я ищу боты и каналы по твоим интересам которые ты выбрал. Чтобы изменить результаты поиска, измени свои интересы.<a href="https://imbt.ga/9z884zDX1w">&#160;</a>', parse_mode='HTML', reply_markup=markup)
+            bot.register_next_step_handler(message, user_menu)
 
         elif (mess == u'Изменить интересы'):
             markup = types.InlineKeyboardMarkup()
@@ -224,8 +222,8 @@ def user_menu(message):  # Пользователь
             markup.row(change_country)
             markup.row(change_content)
             markup.row(change_freq)
-            msg = bot.send_message(message.chat.id, '<b>Изменить интересы!</b>\nВыбирай какие именно интересы ты хочешь изменить.<a href="https://telegra.ph/file/8c2abab1d2ecfc76677d2.jpg">&#160;</a>', parse_mode='HTML', reply_markup=markup)
-            bot.register_next_step_handler(msg, user_menu)
+            bot.send_message(message.chat.id, '<b>Изменить интересы!</b>\nВыбирай какие именно интересы ты хочешь изменить.<a href="https://telegra.ph/file/8c2abab1d2ecfc76677d2.jpg">&#160;</a>', parse_mode='HTML', reply_markup=markup)
+            bot.register_next_step_handler(message, user_menu)
 
         elif (mess == u'Частота рассылки'):
             markup = types.InlineKeyboardMarkup()
@@ -237,26 +235,26 @@ def user_menu(message):  # Пользователь
             markup.row(two_per_day)
             markup.row(one_per_two_days)
             markup.row(one_per_three_days)
-            msg = bot.send_message(message.chat.id, '<b>Частота рассылки!</b>\nКак часто ты хочешь получить россылку каналов и ботов подобранных индивидуально для тебя?<a href="https://imbt.ga/UuCEyp73zo">&#160;</a>', parse_mode='HTML', reply_markup=markup)
-            bot.register_next_step_handler(msg, user_menu)
+            bot.send_message(message.chat.id, '<b>Частота рассылки!</b>\nКак часто ты хочешь получить россылку каналов и ботов подобранных индивидуально для тебя?<a href="https://imbt.ga/UuCEyp73zo">&#160;</a>', parse_mode='HTML', reply_markup=markup)
+            bot.register_next_step_handler(message, user_menu)
 
         elif (mess == u'🏬 Изменить аккаунт'):
             markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
             markup.add('🏬 Владелец', '🚶‍ Пользователь')
-            msg = bot.send_message(message.chat.id, 'Выбери аккаунт, кем хочешь быть!', reply_markup=markup)
-            bot.register_next_step_handler(msg, manage)
+            bot.send_message(message.chat.id, 'Выбери аккаунт, кем хочешь быть!', reply_markup=markup)
+            bot.register_next_step_handler(message, manage)
 
         elif (mess == u'/start'):
             markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
             markup.add('🏬 Владелец', '🚶‍ Пользователь')
-            msg = bot.send_message(message.chat.id, 'Выбери аккаунт, кем хочешь быть!', reply_markup=markup)
-            bot.register_next_step_handler(msg, manage)
+            bot.send_message(message.chat.id, 'Выбери аккаунт, кем хочешь быть!', reply_markup=markup)
+            bot.register_next_step_handler(message, manage)
         else:
             raise Exception()
 
     except Exception as e:
-        msg = bot.send_message(message.chat.id, 'Ошибочка( 3')
-        bot.register_next_step_handler(msg, user_menu)
+        bot.send_message(message.chat.id, 'Ошибочка( 3')
+        bot.register_next_step_handler(message, user_menu)
 
 
 
@@ -270,35 +268,35 @@ def callback(call):
     try:
         if(command == 'add_bot_command'):
             markup = types.InlineKeyboardMarkup()
-            c1 = types.InlineKeyboardButton(text='1. Новости и СМИ', callback_data='saa')
-            c2 = types.InlineKeyboardButton(text='2. Криптовалюты', callback_data='saa')
-            c3 = types.InlineKeyboardButton(text='3. Для взрослых', callback_data='saa')
-            c4 = types.InlineKeyboardButton(text='4. Образование', callback_data='saa')
-            c5 = types.InlineKeyboardButton(text='5. Искусство и фото', callback_data='saa')
-            c6 = types.InlineKeyboardButton(text='6. Здоровье и Спорт', callback_data='saa')
-            c7 = types.InlineKeyboardButton(text='7. Технологии', callback_data='saa')
-            c8 = types.InlineKeyboardButton(text='8. Путешествия', callback_data='saa')
-            c9 = types.InlineKeyboardButton(text='9. Продажи', callback_data='saa')
-            c10 = types.InlineKeyboardButton(text='10. Политика', callback_data='saa')
-            c11 = types.InlineKeyboardButton(text='11. Видео и фильмы', callback_data='saa')
-            c12 = types.InlineKeyboardButton(text='12. Мода и красота', callback_data='saa')
-            c13 = types.InlineKeyboardButton(text='13. Психология', callback_data='saa')
-            c14 = types.InlineKeyboardButton(text='14. Игры и приложения', callback_data='saa')
-            c15 = types.InlineKeyboardButton(text='15. Книги', callback_data='saa')
-            c16 = types.InlineKeyboardButton(text='16. Маркетинг, PR, реклама', callback_data='saa')
-            c17 = types.InlineKeyboardButton(text='17. Цитаты', callback_data='saa')
-            c18 = types.InlineKeyboardButton(text='18. Еда и кулинария', callback_data='saa')
-            c19 = types.InlineKeyboardButton(text='19. Авто', callback_data='saa')
-            c20 = types.InlineKeyboardButton(text='20. Экономика', callback_data='saa')
-            c21 = types.InlineKeyboardButton(text='21. Telegram', callback_data='saa')
-            c22 = types.InlineKeyboardButton(text='22. Лингвистика', callback_data='saa')
-            c23 = types.InlineKeyboardButton(text='23. Дизайн', callback_data='saa')
-            c24 = types.InlineKeyboardButton(text='24. Карьера', callback_data='saa')
-            c25 = types.InlineKeyboardButton(text='25. Семья и дети', callback_data='saa')
-            c26 = types.InlineKeyboardButton(text='26. Медицина', callback_data='saa')
-            c27 = types.InlineKeyboardButton(text='27. Рукоделие', callback_data='saa')
-            c28 = types.InlineKeyboardButton(text='28. Животные', callback_data='saa')
-            c29 = types.InlineKeyboardButton(text='29. Лайфхаки', callback_data='saa')
+            c1 = types.InlineKeyboardButton(text='1. Новости и СМИ', callback_data='news')
+            c2 = types.InlineKeyboardButton(text='2. Криптовалюты', callback_data='crypto')
+            c3 = types.InlineKeyboardButton(text='3. Для взрослых', callback_data='adult')
+            c4 = types.InlineKeyboardButton(text='4. Образование', callback_data='education')
+            c5 = types.InlineKeyboardButton(text='5. Искусство и фото', callback_data='art')
+            c6 = types.InlineKeyboardButton(text='6. Здоровье и Спорт', callback_data='health')
+            c7 = types.InlineKeyboardButton(text='7. Технологии', callback_data='tech')
+            c8 = types.InlineKeyboardButton(text='8. Путешествия', callback_data='travel')
+            c9 = types.InlineKeyboardButton(text='9. Продажи', callback_data='sales')
+            c10 = types.InlineKeyboardButton(text='10. Политика', callback_data='policy')
+            c11 = types.InlineKeyboardButton(text='11. Видео и фильмы', callback_data='video')
+            c12 = types.InlineKeyboardButton(text='12. Мода и красота', callback_data='style')
+            c13 = types.InlineKeyboardButton(text='13. Психология', callback_data='psychology')
+            c14 = types.InlineKeyboardButton(text='14. Игры и приложения', callback_data='games')
+            c15 = types.InlineKeyboardButton(text='15. Книги', callback_data='books')
+            c16 = types.InlineKeyboardButton(text='16. Маркетинг, PR, реклама', callback_data='marketing')
+            c17 = types.InlineKeyboardButton(text='17. Цитаты', callback_data='quotes')
+            c18 = types.InlineKeyboardButton(text='18. Еда и кулинария', callback_data='food')
+            c19 = types.InlineKeyboardButton(text='19. Авто', callback_data='auto')
+            c20 = types.InlineKeyboardButton(text='20. Экономика', callback_data='economy')
+            c21 = types.InlineKeyboardButton(text='21. Telegram', callback_data='telegram')
+            c22 = types.InlineKeyboardButton(text='22. Лингвистика', callback_data='lingvist')
+            c23 = types.InlineKeyboardButton(text='23. Дизайн', callback_data='design')
+            c24 = types.InlineKeyboardButton(text='24. Карьера', callback_data='career')
+            c25 = types.InlineKeyboardButton(text='25. Семья и дети', callback_data='family')
+            c26 = types.InlineKeyboardButton(text='26. Медицина', callback_data='medicine')
+            c27 = types.InlineKeyboardButton(text='27. Рукоделие', callback_data='handmade')
+            c28 = types.InlineKeyboardButton(text='28. Животные', callback_data='animals')
+            c29 = types.InlineKeyboardButton(text='29. Лайфхаки', callback_data='lifehacks')
 
             markup.row(c1)
             markup.row(c2)
@@ -331,9 +329,77 @@ def callback(call):
             markup.row(c29)
            
             bot.send_message(call.message.chat.id, reply_markup=markup, text="<b>Категории!</b>\nВыбери одну категорию, которой соответствует твой контент. Это позволит показывать твой контент только заинтересованным пользователям.<a href='https://imbt.ga/dZNsjMG61z'>&#160;</a>",  parse_mode='HTML')
+            
+            @bot.callback_query_handler(func=lambda call: True)
+            def category_call(call):
+                data = call.data
+                if data == 'news':
+                    bot.send_message(call.message.chat.id, text='aasdqawdqwdqwdsdasd')
 
         elif(command == 'add_channel_command'):
-            bot.send_message(call.message.chat.id, 'Add Channel')
+            markup = types.InlineKeyboardMarkup()
+            c1 = types.InlineKeyboardButton(text='1. Новости и СМИ', callback_data='news')
+            c2 = types.InlineKeyboardButton(text='2. Криптовалюты', callback_data='crypto')
+            c3 = types.InlineKeyboardButton(text='3. Для взрослых', callback_data='adult')
+            c4 = types.InlineKeyboardButton(text='4. Образование', callback_data='education')
+            c5 = types.InlineKeyboardButton(text='5. Искусство и фото', callback_data='art')
+            c6 = types.InlineKeyboardButton(text='6. Здоровье и Спорт', callback_data='health')
+            c7 = types.InlineKeyboardButton(text='7. Технологии', callback_data='tech')
+            c8 = types.InlineKeyboardButton(text='8. Путешествия', callback_data='travel')
+            c9 = types.InlineKeyboardButton(text='9. Продажи', callback_data='sales')
+            c10 = types.InlineKeyboardButton(text='10. Политика', callback_data='policy')
+            c11 = types.InlineKeyboardButton(text='11. Видео и фильмы', callback_data='video')
+            c12 = types.InlineKeyboardButton(text='12. Мода и красота', callback_data='style')
+            c13 = types.InlineKeyboardButton(text='13. Психология', callback_data='psychology')
+            c14 = types.InlineKeyboardButton(text='14. Игры и приложения', callback_data='games')
+            c15 = types.InlineKeyboardButton(text='15. Книги', callback_data='books')
+            c16 = types.InlineKeyboardButton(text='16. Маркетинг, PR, реклама', callback_data='marketing')
+            c17 = types.InlineKeyboardButton(text='17. Цитаты', callback_data='quotes')
+            c18 = types.InlineKeyboardButton(text='18. Еда и кулинария', callback_data='food')
+            c19 = types.InlineKeyboardButton(text='19. Авто', callback_data='auto')
+            c20 = types.InlineKeyboardButton(text='20. Экономика', callback_data='economy')
+            c21 = types.InlineKeyboardButton(text='21. Telegram', callback_data='telegram')
+            c22 = types.InlineKeyboardButton(text='22. Лингвистика', callback_data='lingvist')
+            c23 = types.InlineKeyboardButton(text='23. Дизайн', callback_data='design')
+            c24 = types.InlineKeyboardButton(text='24. Карьера', callback_data='career')
+            c25 = types.InlineKeyboardButton(text='25. Семья и дети', callback_data='family')
+            c26 = types.InlineKeyboardButton(text='26. Медицина', callback_data='medicine')
+            c27 = types.InlineKeyboardButton(text='27. Рукоделие', callback_data='handmade')
+            c28 = types.InlineKeyboardButton(text='28. Животные', callback_data='animals')
+            c29 = types.InlineKeyboardButton(text='29. Лайфхаки', callback_data='lifehacks')
+
+            markup.row(c1)
+            markup.row(c2)
+            markup.row(c3)
+            markup.row(c4)
+            markup.row(c5)
+            markup.row(c6)
+            markup.row(c7)
+            markup.row(c8)
+            markup.row(c9)
+            markup.row(c10)
+            markup.row(c11)
+            markup.row(c12)
+            markup.row(c13)
+            markup.row(c14)
+            markup.row(c15)
+            markup.row(c16)
+            markup.row(c17)
+            markup.row(c18)
+            markup.row(c19)
+            markup.row(c20)
+            markup.row(c21)
+            markup.row(c22)
+            markup.row(c23)
+            markup.row(c24)
+            markup.row(c25)
+            markup.row(c26)
+            markup.row(c27)
+            markup.row(c28)
+            markup.row(c29)
+           
+            bot.send_message(call.message.chat.id, reply_markup=markup, text="<b>Категории!</b>\nВыбери одну категорию, которой соответствует твой контент. Это позволит показывать твой контент только заинтересованным пользователям.<a href='https://imbt.ga/dZNsjMG61z'>&#160;</a>",  parse_mode='HTML')
+            
 
         elif(command == 'add_money'):
             cursor.execute(f"UPDATE users SET MONEY = (25.2) WHERE ID = {user}")
@@ -342,13 +408,22 @@ def callback(call):
             bot.send_message(call.message.chat.id, 'Add Some Demo Money')
 
         elif(command == 'channel_stat'):
-            msg = bot.send_message(call.message.chat.id, '<b>Бот:</b> @ome33\nПереходов: 567 (2 цента за переход)\n💰 <b>11, 34$</b><a href="https://telegra.ph/file/954afb76178f388d7d4f6.jpg">&#160;</a>', parse_mode='HTML')
+            cursor.execute('SELECT ')
+            bot.send_message(call.message.chat.id, '<b>Бот:</b> @ome33\nПереходов: 567 (2 цента за переход)\n💰 <b>11, 34$</b><a href="https://telegra.ph/file/954afb76178f388d7d4f6.jpg">&#160;</a>', parse_mode='HTML')
                     
         elif(command == 'bot_stat'):
             bot.send_message(call.message.chat.id, '<b>Канал:</b> @omfewfe3a3\nПереходов: 957 (2 цента за переход)\n💰 <b>19, 84$</b><a href="https://telegra.ph/file/8cde82c7e8f5f1c8ddf50.jpg">&#160;</a>', )
 
         elif(command == 'search_bots'):
-            bot.send_message(call.message.chat.id, 'Search Bots')
+            bot.send_message(call.message.chat.id, 'gbfgb')
+            @bot.inline_handler(lambda query: query.query == 'search_bots')
+            def query_text(inline_query):
+                try:
+                    r = types.InlineQueryResultArticle('1', 'Result', types.InputTextMessageContent('Result message.'))
+                    r2 = types.InlineQueryResultArticle('2', 'Result2', types.InputTextMessageContent('Result message2.'))
+                    bot.answer_inline_query(inline_query.id, [r, r2])
+                except Exception as e:
+                    print(e)
 
         elif(command == 'search_channels'):
             bot.send_message(call.message.chat.id, 'Search Channels')
@@ -363,7 +438,7 @@ def callback(call):
             markup.row(change_country)
             markup.row(change_content)
             markup.row(change_freq)
-            msg = bot.send_message(call.message.chat.id, '<b>Изменить интересы!</b>\nВыбирай какие именно интересы ты хочешь изменить.<a href="https://telegra.ph/file/8c2abab1d2ecfc76677d2.jpg">&#160;</a>', parse_mode='HTML', reply_markup=markup)
+            bot.send_message(call.message.chat.id, '<b>Изменить интересы!</b>\nВыбирай какие именно интересы ты хочешь изменить.<a href="https://telegra.ph/file/8c2abab1d2ecfc76677d2.jpg">&#160;</a>', parse_mode='HTML', reply_markup=markup)
 
             @bot.callback_query_handler(func=lambda call: True)
             def callback(call):
@@ -388,8 +463,8 @@ def callback(call):
             markup.row(two_per_day)
             markup.row(one_per_two_days)
             markup.row(one_per_three_days)
-            msg = bot.send_message(message.chat.id, '<b>Частота рассылки!</b>\nКак часто ты хочешь получить россылку каналов и ботов подобранных индивидуально для тебя?<a href="https://imbt.ga/UuCEyp73zo">&#160;</a>', parse_mode='HTML', reply_markup=markup)
-            bot.register_next_step_handler(msg, user_menu)
+            bot.send_message(message.chat.id, '<b>Частота рассылки!</b>\nКак часто ты хочешь получить россылку каналов и ботов подобранных индивидуально для тебя?<a href="https://imbt.ga/UuCEyp73zo">&#160;</a>', parse_mode='HTML', reply_markup=markup)
+            bot.register_next_step_handler(message, user_menu)
 
         elif(command == 'one_per_day'):
             cursor.execute(f"UPDATE users SET FREQ = 'one_per_day' WHERE ID = {user}")
@@ -416,22 +491,22 @@ def callback(call):
             bot.send_message(call.message.chat.id, '🕥 <b>Раз в 3 дня</b>\nОтлично, теперь я буду присылать раз в 3 дня интересного бота, или канал. Рассылка зависит от выбранных вами интересов.<a href="https://telegra.ph/file/06d026ea7f832d1c3c757.jpg">&#160;</a>', parse_mode="HTML")
         elif(command == 'saa'):
             markup = types.InlineKeyboardMarkup()
-            c1 = types.InlineKeyboardButton(text='Россия', callback_data='sc')
-            c2 = types.InlineKeyboardButton(text='Украина', callback_data='sc')
-            c3 = types.InlineKeyboardButton(text='Белоруссия', callback_data='sc')
-            c4 = types.InlineKeyboardButton(text='Казахстан', callback_data='sc')
-            c5 = types.InlineKeyboardButton(text='Узбекистан', callback_data='sc')
-            c6 = types.InlineKeyboardButton(text='Грузия', callback_data='sc')
-            c7 = types.InlineKeyboardButton(text='Молдавия', callback_data='sc')
-            c8 = types.InlineKeyboardButton(text='Литва', callback_data='sc')
-            c9 = types.InlineKeyboardButton(text='Латвия', callback_data='sc')
-            c10 = types.InlineKeyboardButton(text='Эстония', callback_data='sc')
-            c11 = types.InlineKeyboardButton(text='Армения', callback_data='sc')
-            c12 = types.InlineKeyboardButton(text='Таджикистан', callback_data='sc')
-            c13 = types.InlineKeyboardButton(text='Азербайджан', callback_data='sc')
-            c14 = types.InlineKeyboardButton(text='Киргизия', callback_data='sc')
-            c15 = types.InlineKeyboardButton(text='Туркменистан', callback_data='sc')
-            c16 = types.InlineKeyboardButton(text='🗺️ Все страны', callback_data='sc')
+            c1 = types.InlineKeyboardButton(text='Россия', callback_data='bot_ru')
+            c2 = types.InlineKeyboardButton(text='Украина', callback_data='bot_ua')
+            c3 = types.InlineKeyboardButton(text='Белоруссия', callback_data='bot_by')
+            c4 = types.InlineKeyboardButton(text='Казахстан', callback_data='bot_kz')
+            c5 = types.InlineKeyboardButton(text='Узбекистан', callback_data='bot_uz')
+            c6 = types.InlineKeyboardButton(text='Грузия', callback_data='bot_ge')
+            c7 = types.InlineKeyboardButton(text='Молдавия', callback_data='bot_md')
+            c8 = types.InlineKeyboardButton(text='Литва', callback_data='bot_lt')
+            c9 = types.InlineKeyboardButton(text='Латвия', callback_data='bot_lv')
+            c10 = types.InlineKeyboardButton(text='Эстония', callback_data='bot_ee')
+            c11 = types.InlineKeyboardButton(text='Армения', callback_data='bot_am')
+            c12 = types.InlineKeyboardButton(text='Таджикистан', callback_data='bot_tj')
+            c13 = types.InlineKeyboardButton(text='Азербайджан', callback_data='bot_az')
+            c14 = types.InlineKeyboardButton(text='Киргизия', callback_data='bot_kg')
+            c15 = types.InlineKeyboardButton(text='Туркменистан', callback_data='bot_tm')
+            c16 = types.InlineKeyboardButton(text='🗺️ Все страны', callback_data='bot_all')
             
 
             markup.row(c1)
@@ -453,20 +528,164 @@ def callback(call):
             
            
             bot.send_message(call.message.chat.id, reply_markup=markup, parse_mode='HTML', text='<b>Страна!</b>\nЕсли твой бот локализован под определенную страну или группу стран, тогда выбери страну с целевыми пользователями. Если хочешь чтобы бот продвигался не зависимо от страны проживания пользователей, нажми - "Все страны".<a href="https://imbt.ga/rbJntgXEla">&#160;</a>')
+        elif command == 'news':
+            try:
+                markup = types.InlineKeyboardMarkup()
+               
+                c1 = types.InlineKeyboardButton(text='chaeck 1. Новости и СМИ', callback_data='news')
+                c2 = types.InlineKeyboardButton(text='2. Криптовалюты', callback_data='crypto')
+                c3 = types.InlineKeyboardButton(text='3. Для взрослых', callback_data='adult')
+                c4 = types.InlineKeyboardButton(text='4. Образование', callback_data='education')
+                c5 = types.InlineKeyboardButton(text='5. Искусство и фото', callback_data='art')
+                c6 = types.InlineKeyboardButton(text='6. Здоровье и Спорт', callback_data='health')
+                c7 = types.InlineKeyboardButton(text='7. Технологии', callback_data='tech')
+                c8 = types.InlineKeyboardButton(text='8. Путешествия', callback_data='travel')
+                c9 = types.InlineKeyboardButton(text='9. Продажи', callback_data='sales')
+                c10 = types.InlineKeyboardButton(text='10. Политика', callback_data='policy')
+                c11 = types.InlineKeyboardButton(text='11. Видео и фильмы', callback_data='video')
+                c12 = types.InlineKeyboardButton(text='12. Мода и красота', callback_data='style')
+                c13 = types.InlineKeyboardButton(text='13. Психология', callback_data='psychology')
+                c14 = types.InlineKeyboardButton(text='14. Игры и приложения', callback_data='games')
+                c15 = types.InlineKeyboardButton(text='15. Книги', callback_data='books')
+                c16 = types.InlineKeyboardButton(text='16. Маркетинг, PR, реклама', callback_data='marketing')
+                c17 = types.InlineKeyboardButton(text='17. Цитаты', callback_data='quotes')
+                c18 = types.InlineKeyboardButton(text='18. Еда и кулинария', callback_data='food')
+                c19 = types.InlineKeyboardButton(text='19. Авто', callback_data='auto')
+                c20 = types.InlineKeyboardButton(text='20. Экономика', callback_data='economy')
+                c21 = types.InlineKeyboardButton(text='21. Telegram', callback_data='telegram')
+                c22 = types.InlineKeyboardButton(text='22. Лингвистика', callback_data='lingvist')
+                c23 = types.InlineKeyboardButton(text='23. Дизайн', callback_data='design')
+                c24 = types.InlineKeyboardButton(text='24. Карьера', callback_data='career')
+                c25 = types.InlineKeyboardButton(text='25. Семья и дети', callback_data='family')
+                c26 = types.InlineKeyboardButton(text='26. Медицина', callback_data='medicine')
+                c27 = types.InlineKeyboardButton(text='27. Рукоделие', callback_data='handmade')
+                c28 = types.InlineKeyboardButton(text='28. Животные', callback_data='animals')
+                c29 = types.InlineKeyboardButton(text='29. Лайфхаки', callback_data='lifehacks')
+
+                markup.row(c1)
+                markup.row(c2)
+                markup.row(c3)
+                markup.row(c4)
+                markup.row(c5)
+                markup.row(c6)
+                markup.row(c7)
+                markup.row(c8)
+                markup.row(c9)
+                markup.row(c10)
+                markup.row(c11)
+                markup.row(c12)
+                markup.row(c13)
+                markup.row(c14)
+                markup.row(c15)
+                markup.row(c16)
+                markup.row(c17)
+                markup.row(c18)
+                markup.row(c19)
+                markup.row(c20)
+                markup.row(c21)
+                markup.row(c22)
+                markup.row(c23)
+                markup.row(c24)
+                markup.row(c25)
+                markup.row(c26)
+                markup.row(c27)
+                markup.row(c28)
+                markup.row(c29)
+                bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=markup)
+            except:
+                print('\nsdasdas\n')
+        elif command == 'crypto':
+            try:
+                markup = types.InlineKeyboardMarkup()
+                
+                c1 = types.InlineKeyboardButton(text='1. Новости и СМИ', callback_data='news')
+                c2 = types.InlineKeyboardButton(text='check 2. Криптовалюты', callback_data='crypto')
+                c3 = types.InlineKeyboardButton(text='3. Для взрослых', callback_data='adult')
+                c4 = types.InlineKeyboardButton(text='4. Образование', callback_data='education')
+                c5 = types.InlineKeyboardButton(text='5. Искусство и фото', callback_data='art')
+                c6 = types.InlineKeyboardButton(text='6. Здоровье и Спорт', callback_data='health')
+                c7 = types.InlineKeyboardButton(text='7. Технологии', callback_data='tech')
+                c8 = types.InlineKeyboardButton(text='8. Путешествия', callback_data='travel')
+                c9 = types.InlineKeyboardButton(text='9. Продажи', callback_data='sales')
+                c10 = types.InlineKeyboardButton(text='10. Политика', callback_data='policy')
+                c11 = types.InlineKeyboardButton(text='11. Видео и фильмы', callback_data='video')
+                c12 = types.InlineKeyboardButton(text='12. Мода и красота', callback_data='style')
+                c13 = types.InlineKeyboardButton(text='13. Психология', callback_data='psychology')
+                c14 = types.InlineKeyboardButton(text='14. Игры и приложения', callback_data='games')
+                c15 = types.InlineKeyboardButton(text='15. Книги', callback_data='books')
+                c16 = types.InlineKeyboardButton(text='16. Маркетинг, PR, реклама', callback_data='marketing')
+                c17 = types.InlineKeyboardButton(text='17. Цитаты', callback_data='quotes')
+                c18 = types.InlineKeyboardButton(text='18. Еда и кулинария', callback_data='food')
+                c19 = types.InlineKeyboardButton(text='19. Авто', callback_data='auto')
+                c20 = types.InlineKeyboardButton(text='20. Экономика', callback_data='economy')
+                c21 = types.InlineKeyboardButton(text='21. Telegram', callback_data='telegram')
+                c22 = types.InlineKeyboardButton(text='22. Лингвистика', callback_data='lingvist')
+                c23 = types.InlineKeyboardButton(text='23. Дизайн', callback_data='design')
+                c24 = types.InlineKeyboardButton(text='24. Карьера', callback_data='career')
+                c25 = types.InlineKeyboardButton(text='25. Семья и дети', callback_data='family')
+                c26 = types.InlineKeyboardButton(text='26. Медицина', callback_data='medicine')
+                c27 = types.InlineKeyboardButton(text='27. Рукоделие', callback_data='handmade')
+                c28 = types.InlineKeyboardButton(text='28. Животные', callback_data='animals')
+                c29 = types.InlineKeyboardButton(text='29. Лайфхаки', callback_data='lifehacks')
+
+                markup.row(c1)
+                markup.row(c2)
+                markup.row(c3)
+                markup.row(c4)
+                markup.row(c5)
+                markup.row(c6)
+                markup.row(c7)
+                markup.row(c8)
+                markup.row(c9)
+                markup.row(c10)
+                markup.row(c11)
+                markup.row(c12)
+                markup.row(c13)
+                markup.row(c14)
+                markup.row(c15)
+                markup.row(c16)
+                markup.row(c17)
+                markup.row(c18)
+                markup.row(c19)
+                markup.row(c20)
+                markup.row(c21)
+                markup.row(c22)
+                markup.row(c23)
+                markup.row(c24)
+                markup.row(c25)
+                markup.row(c26)
+                markup.row(c27)
+                markup.row(c28)
+                markup.row(c29)
+                bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=markup)
+            except:
+                print('\nsdasdas\n')
         elif(command == 'sc'):
+
             bot.send_message(call.message.chat.id, parse_mode="HTML", text='Теперь пришли мне юзер или ссылку на твоего бота или канал.<a href="https://telegra.ph/file/7b0e662039812d457bc62.jpg">&#160;</a>')
             
             
             @bot.message_handler(content_types=['text'])
             def botid(message):
+                conn = sqlite3.connect('robo_users')
+                cursor = conn.cursor()
                 mess = message.text
+                rnd = random.randint(0, 9999999)
+                user = (rnd, message.from_user.id, mess, 'bot')
                 x = list(mess)
                 if x[0] == '@':
-                    msg = bot.send_message(message.chat.id, text='<b>Модерация!</b>\nИдёт модерация. После прохождения модерации я сообщу тебе о следующих этапах.<a href="https://telegra.ph/file/ff35a013de4c89a43f02c.jpg">&#160;</a>', parse_mode='HTML')
-                    bot.register_next_step_handler(msg, owner_menu)
+                    try:
+                        cursor.execute('INSERT INTO BAC_DB (ID, ID_OF_OWNER, UN, B_OR_C) VALUES (?, ?, ?, ?)', user)
+                        conn.commit()
+                        conn.close()
+                    except sqlite3.DatabaseError as err:       
+                        print("Error: ", err)
+                    bot.send_message(message.chat.id, text='<b>Модерация!</b>\nИдёт модерация. После прохождения модерации я сообщу тебе о следующих этапах.<a href="https://telegra.ph/file/ff35a013de4c89a43f02c.jpg">&#160;</a>', parse_mode='HTML')
+                    bot.register_next_step_handler(message, owner_menu)
                 else:
-                    msg = bot.send_message(message.chat.id, text='<b>Укажите корректное название канала или бота!</b>', parse_mode='HTML')
-                    bot.register_next_step_handler(msg, botid)
+                    bot.send_message(message.chat.id, text='<b>Укажите корректное название канала или бота!</b>', parse_mode='HTML')
+                    bot.register_next_step_handler(message, botid)
+                    conn.close()
 
     except Exception as e:
         bot.send_message(call.message.chat.id, 'nope(')

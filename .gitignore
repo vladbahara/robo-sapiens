@@ -4,3 +4,11 @@ __pycache__/config.cpython-37.pyc
 robo_users
 users.sql
 sda.py
+categer.py
+dbworker.py
+dfs.py
+handlers.py
+keyboard.py
+main-rew.py
+robo_users
+sda.py
