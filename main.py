@@ -2,6 +2,7 @@
 import logging
 import sqlite3
 import time
+import re
 import telebot
 import random
 from telebot import types
@@ -11,6 +12,43 @@ logger = telebot.logger
 telebot.logger.setLevel(logging.DEBUG)
 
 bot = telebot.TeleBot(token)
+
+
+
+
+c1 = types.InlineKeyboardButton(text='1. Новости и СМИ', callback_data='news')
+c2 = types.InlineKeyboardButton(text='2. Криптовалюты', callback_data='crypto')
+c3 = types.InlineKeyboardButton(text='3. Для взрослых', callback_data='adult')
+c4 = types.InlineKeyboardButton(text='4. Образование', callback_data='education')
+c5 = types.InlineKeyboardButton(text='5. Искусство и фото', callback_data='art')
+c6 = types.InlineKeyboardButton(text='6. Здоровье и Спорт', callback_data='health')
+c7 = types.InlineKeyboardButton(text='7. Технологии', callback_data='tech')
+c8 = types.InlineKeyboardButton(text='8. Путешествия', callback_data='travel')
+c9 = types.InlineKeyboardButton(text='9. Продажи', callback_data='sales')
+c10 = types.InlineKeyboardButton(text='10. Политика', callback_data='policy')
+c11 = types.InlineKeyboardButton(text='11. Видео и фильмы', callback_data='video')
+c12 = types.InlineKeyboardButton(text='12. Мода и красота', callback_data='style')
+c13 = types.InlineKeyboardButton(text='13. Психология', callback_data='psychology')
+c14 = types.InlineKeyboardButton(text='14. Игры и приложения', callback_data='games')
+c15 = types.InlineKeyboardButton(text='15. Книги', callback_data='books')
+c16 = types.InlineKeyboardButton(text='16. Маркетинг, PR, реклама', callback_data='marketing')
+c17 = types.InlineKeyboardButton(text='17. Цитаты', callback_data='quotes')
+c18 = types.InlineKeyboardButton(text='18. Еда и кулинария', callback_data='food')
+c19 = types.InlineKeyboardButton(text='19. Авто', callback_data='auto')
+c20 = types.InlineKeyboardButton(text='20. Экономика', callback_data='economy')
+c21 = types.InlineKeyboardButton(text='21. Telegram', callback_data='telegram')
+c22 = types.InlineKeyboardButton(text='22. Лингвистика', callback_data='lingvist')
+c23 = types.InlineKeyboardButton(text='23. Дизайн', callback_data='design')
+c24 = types.InlineKeyboardButton(text='24. Карьера', callback_data='career')
+c25 = types.InlineKeyboardButton(text='25. Семья и дети', callback_data='family')
+c26 = types.InlineKeyboardButton(text='26. Медицина', callback_data='medicine')
+c27 = types.InlineKeyboardButton(text='27. Рукоделие', callback_data='handmade')
+c28 = types.InlineKeyboardButton(text='28. Животные', callback_data='animals')
+c29 = types.InlineKeyboardButton(text='29. Лайфхаки', callback_data='lifehacks')
+
+
+
+
 
 
 @bot.message_handler(commands=[''])
@@ -265,38 +303,28 @@ def callback(call):
     cursor = conn.cursor()
     command = call.data
     user = call.message.chat.id
+    global c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15, c16, c17, c18, c19, c20, c21, c22, c23, c24, c25, c26, c27, c28, c29
     try:
         if(command == 'add_bot_command'):
+            
             markup = types.InlineKeyboardMarkup()
-            c1 = types.InlineKeyboardButton(text='1. Новости и СМИ', callback_data='news')
-            c2 = types.InlineKeyboardButton(text='2. Криптовалюты', callback_data='crypto')
-            c3 = types.InlineKeyboardButton(text='3. Для взрослых', callback_data='adult')
-            c4 = types.InlineKeyboardButton(text='4. Образование', callback_data='education')
-            c5 = types.InlineKeyboardButton(text='5. Искусство и фото', callback_data='art')
-            c6 = types.InlineKeyboardButton(text='6. Здоровье и Спорт', callback_data='health')
-            c7 = types.InlineKeyboardButton(text='7. Технологии', callback_data='tech')
-            c8 = types.InlineKeyboardButton(text='8. Путешествия', callback_data='travel')
-            c9 = types.InlineKeyboardButton(text='9. Продажи', callback_data='sales')
-            c10 = types.InlineKeyboardButton(text='10. Политика', callback_data='policy')
-            c11 = types.InlineKeyboardButton(text='11. Видео и фильмы', callback_data='video')
-            c12 = types.InlineKeyboardButton(text='12. Мода и красота', callback_data='style')
-            c13 = types.InlineKeyboardButton(text='13. Психология', callback_data='psychology')
-            c14 = types.InlineKeyboardButton(text='14. Игры и приложения', callback_data='games')
-            c15 = types.InlineKeyboardButton(text='15. Книги', callback_data='books')
-            c16 = types.InlineKeyboardButton(text='16. Маркетинг, PR, реклама', callback_data='marketing')
-            c17 = types.InlineKeyboardButton(text='17. Цитаты', callback_data='quotes')
-            c18 = types.InlineKeyboardButton(text='18. Еда и кулинария', callback_data='food')
-            c19 = types.InlineKeyboardButton(text='19. Авто', callback_data='auto')
-            c20 = types.InlineKeyboardButton(text='20. Экономика', callback_data='economy')
-            c21 = types.InlineKeyboardButton(text='21. Telegram', callback_data='telegram')
-            c22 = types.InlineKeyboardButton(text='22. Лингвистика', callback_data='lingvist')
-            c23 = types.InlineKeyboardButton(text='23. Дизайн', callback_data='design')
-            c24 = types.InlineKeyboardButton(text='24. Карьера', callback_data='career')
-            c25 = types.InlineKeyboardButton(text='25. Семья и дети', callback_data='family')
-            c26 = types.InlineKeyboardButton(text='26. Медицина', callback_data='medicine')
-            c27 = types.InlineKeyboardButton(text='27. Рукоделие', callback_data='handmade')
-            c28 = types.InlineKeyboardButton(text='28. Животные', callback_data='animals')
-            c29 = types.InlineKeyboardButton(text='29. Лайфхаки', callback_data='lifehacks')
+            '''
+            def ca():
+                try:
+                    for item in arr:
+                        yield item
+                except:
+                    print('\nerr 1 \n')
+            f = ca()
+            def ce():
+                for i in arr:
+                    try:
+                       ...
+                    except StopIteration:
+                        pass
+            '''
+            
+            
 
             markup.row(c1)
             markup.row(c2)
@@ -327,46 +355,19 @@ def callback(call):
             markup.row(c27)
             markup.row(c28)
             markup.row(c29)
-           
-            bot.send_message(call.message.chat.id, reply_markup=markup, text="<b>Категории!</b>\nВыбери одну категорию, которой соответствует твой контент. Это позволит показывать твой контент только заинтересованным пользователям.<a href='https://imbt.ga/dZNsjMG61z'>&#160;</a>",  parse_mode='HTML')
             
-            @bot.callback_query_handler(func=lambda call: True)
-            def category_call(call):
-                data = call.data
-                if data == 'news':
-                    bot.send_message(call.message.chat.id, text='aasdqawdqwdqwdsdasd')
+        
+            
+            bot.send_message(call.message.chat.id, reply_markup=markup, text="<b>Категории!</b>\nВыбери одну категорию, которой соответствует твой контент. Это позволит показывать твой контент только заинтересованным пользователям.<a href='https://imbt.ga/dZNsjMG61z'>&#160;</a>",  parse_mode='HTML')
+
+
+            
+                        
+        
 
         elif(command == 'add_channel_command'):
             markup = types.InlineKeyboardMarkup()
-            c1 = types.InlineKeyboardButton(text='1. Новости и СМИ', callback_data='news')
-            c2 = types.InlineKeyboardButton(text='2. Криптовалюты', callback_data='crypto')
-            c3 = types.InlineKeyboardButton(text='3. Для взрослых', callback_data='adult')
-            c4 = types.InlineKeyboardButton(text='4. Образование', callback_data='education')
-            c5 = types.InlineKeyboardButton(text='5. Искусство и фото', callback_data='art')
-            c6 = types.InlineKeyboardButton(text='6. Здоровье и Спорт', callback_data='health')
-            c7 = types.InlineKeyboardButton(text='7. Технологии', callback_data='tech')
-            c8 = types.InlineKeyboardButton(text='8. Путешествия', callback_data='travel')
-            c9 = types.InlineKeyboardButton(text='9. Продажи', callback_data='sales')
-            c10 = types.InlineKeyboardButton(text='10. Политика', callback_data='policy')
-            c11 = types.InlineKeyboardButton(text='11. Видео и фильмы', callback_data='video')
-            c12 = types.InlineKeyboardButton(text='12. Мода и красота', callback_data='style')
-            c13 = types.InlineKeyboardButton(text='13. Психология', callback_data='psychology')
-            c14 = types.InlineKeyboardButton(text='14. Игры и приложения', callback_data='games')
-            c15 = types.InlineKeyboardButton(text='15. Книги', callback_data='books')
-            c16 = types.InlineKeyboardButton(text='16. Маркетинг, PR, реклама', callback_data='marketing')
-            c17 = types.InlineKeyboardButton(text='17. Цитаты', callback_data='quotes')
-            c18 = types.InlineKeyboardButton(text='18. Еда и кулинария', callback_data='food')
-            c19 = types.InlineKeyboardButton(text='19. Авто', callback_data='auto')
-            c20 = types.InlineKeyboardButton(text='20. Экономика', callback_data='economy')
-            c21 = types.InlineKeyboardButton(text='21. Telegram', callback_data='telegram')
-            c22 = types.InlineKeyboardButton(text='22. Лингвистика', callback_data='lingvist')
-            c23 = types.InlineKeyboardButton(text='23. Дизайн', callback_data='design')
-            c24 = types.InlineKeyboardButton(text='24. Карьера', callback_data='career')
-            c25 = types.InlineKeyboardButton(text='25. Семья и дети', callback_data='family')
-            c26 = types.InlineKeyboardButton(text='26. Медицина', callback_data='medicine')
-            c27 = types.InlineKeyboardButton(text='27. Рукоделие', callback_data='handmade')
-            c28 = types.InlineKeyboardButton(text='28. Животные', callback_data='animals')
-            c29 = types.InlineKeyboardButton(text='29. Лайфхаки', callback_data='lifehacks')
+            
 
             markup.row(c1)
             markup.row(c2)
@@ -528,39 +529,14 @@ def callback(call):
             
            
             bot.send_message(call.message.chat.id, reply_markup=markup, parse_mode='HTML', text='<b>Страна!</b>\nЕсли твой бот локализован под определенную страну или группу стран, тогда выбери страну с целевыми пользователями. Если хочешь чтобы бот продвигался не зависимо от страны проживания пользователей, нажми - "Все страны".<a href="https://imbt.ga/rbJntgXEla">&#160;</a>')
-        elif command == 'news':
+        elif command == '!news':
             try:
+                button_text = getattr(c1, 'text')
+                if button_text == '1. Новости и СМИ':
+                    setattr(c1, 'text', '✔️ 1. Новости и СМИ')
+                elif button_text == '✔️ 1. Новости и СМИ':
+                    setattr(c1, 'text', '1. Новости и СМИ')
                 markup = types.InlineKeyboardMarkup()
-               
-                c1 = types.InlineKeyboardButton(text='chaeck 1. Новости и СМИ', callback_data='news')
-                c2 = types.InlineKeyboardButton(text='2. Криптовалюты', callback_data='crypto')
-                c3 = types.InlineKeyboardButton(text='3. Для взрослых', callback_data='adult')
-                c4 = types.InlineKeyboardButton(text='4. Образование', callback_data='education')
-                c5 = types.InlineKeyboardButton(text='5. Искусство и фото', callback_data='art')
-                c6 = types.InlineKeyboardButton(text='6. Здоровье и Спорт', callback_data='health')
-                c7 = types.InlineKeyboardButton(text='7. Технологии', callback_data='tech')
-                c8 = types.InlineKeyboardButton(text='8. Путешествия', callback_data='travel')
-                c9 = types.InlineKeyboardButton(text='9. Продажи', callback_data='sales')
-                c10 = types.InlineKeyboardButton(text='10. Политика', callback_data='policy')
-                c11 = types.InlineKeyboardButton(text='11. Видео и фильмы', callback_data='video')
-                c12 = types.InlineKeyboardButton(text='12. Мода и красота', callback_data='style')
-                c13 = types.InlineKeyboardButton(text='13. Психология', callback_data='psychology')
-                c14 = types.InlineKeyboardButton(text='14. Игры и приложения', callback_data='games')
-                c15 = types.InlineKeyboardButton(text='15. Книги', callback_data='books')
-                c16 = types.InlineKeyboardButton(text='16. Маркетинг, PR, реклама', callback_data='marketing')
-                c17 = types.InlineKeyboardButton(text='17. Цитаты', callback_data='quotes')
-                c18 = types.InlineKeyboardButton(text='18. Еда и кулинария', callback_data='food')
-                c19 = types.InlineKeyboardButton(text='19. Авто', callback_data='auto')
-                c20 = types.InlineKeyboardButton(text='20. Экономика', callback_data='economy')
-                c21 = types.InlineKeyboardButton(text='21. Telegram', callback_data='telegram')
-                c22 = types.InlineKeyboardButton(text='22. Лингвистика', callback_data='lingvist')
-                c23 = types.InlineKeyboardButton(text='23. Дизайн', callback_data='design')
-                c24 = types.InlineKeyboardButton(text='24. Карьера', callback_data='career')
-                c25 = types.InlineKeyboardButton(text='25. Семья и дети', callback_data='family')
-                c26 = types.InlineKeyboardButton(text='26. Медицина', callback_data='medicine')
-                c27 = types.InlineKeyboardButton(text='27. Рукоделие', callback_data='handmade')
-                c28 = types.InlineKeyboardButton(text='28. Животные', callback_data='animals')
-                c29 = types.InlineKeyboardButton(text='29. Лайфхаки', callback_data='lifehacks')
 
                 markup.row(c1)
                 markup.row(c2)
@@ -690,9 +666,11 @@ def callback(call):
     except Exception as e:
         bot.send_message(call.message.chat.id, 'nope(')
         
-    
 
-
+@bot.callback_query_handler(func=lambda call: call.data == re.search('^news$'))
+def gercall(call):
+    if call.data == 'news':
+        print(f'\n{call.data}\n')
 
 if __name__ == '__main__':
     while True:
